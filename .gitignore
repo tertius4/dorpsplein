@@ -26,3 +26,6 @@ test-results
 
 # Prisma (generated with `prisma generate`)
 /src/lib/server/db/generated
+
+# Cloudflare reads env variables from here
+.dev.vars
