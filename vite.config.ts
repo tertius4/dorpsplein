@@ -1,3 +1,4 @@
+import { prismaWasm } from './vite-plugins/prisma-wasm.ts';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 import adapter from '@sveltejs/adapter-cloudflare';
@@ -5,6 +6,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 
 export default defineConfig({
 	plugins: [
+		prismaWasm(),
 		tailwindcss(),
 		sveltekit({
 			compilerOptions: {

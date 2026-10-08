@@ -18,7 +18,8 @@
 		"gen": "wrangler types",
 		"db:generate": "prisma generate",
 		"db:migrate": "prisma migrate dev",
-		"db:studio": "prisma studio"
+		"db:studio": "prisma studio",
+		"db:seed": "prisma db seed"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
