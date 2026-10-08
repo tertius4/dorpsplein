@@ -11,9 +11,14 @@
 	"observability": {
 		"enabled": true
 	},
+	"routes": [{ "pattern": "dorpsplein.co.za", "custom_domain": true }],
 	"vars": { "APP_ENV": "production" },
 	"previews": {
 		"vars": { "APP_ENV": "dev" },
 		"observability": { "enabled": true }
+	},
+	"env": {
+		"routes": [{ "pattern": "dev.dorpsplein.co.za", "custom_domain": true }],
+		"vars": { "APP_ENV": "dev" }
 	}
 }
