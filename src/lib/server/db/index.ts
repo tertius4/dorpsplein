@@ -1,6 +1,6 @@
-import { prisma } from './client.ts';
-import { category } from './category.ts';
 import type { Prisma } from './generated/client.ts';
+import { category } from './category.ts';
+import { prisma } from './client.ts';
 
 export const DB = {
 	category,
@@ -9,3 +9,4 @@ export const DB = {
 };
 
 export type * from './generated/client.ts';
+export * from './generated/enums.ts';
