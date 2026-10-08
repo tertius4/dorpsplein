@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getCategories } from '#lib/remote/categories.remote.ts';
+	import { APP_ENV } from '$app/env/public';
 </script>
 
 <svelte:head>
@@ -7,7 +8,14 @@
 </svelte:head>
 
 <main class="mx-auto max-w-2xl px-4 py-12">
-	<h1 class="text-3xl font-bold text-stone-900">Dorpsplein - Dev</h1>
+	<h1 class="text-3xl font-bold text-stone-900">
+		Dorpsplein
+		{#if APP_ENV !== 'production'}
+			<span class="ml-2 rounded bg-amber-100 px-2 py-0.5 align-middle text-sm text-amber-800">
+				{APP_ENV}
+			</span>
+		{/if}
+	</h1>
 	<p class="mt-2 text-lg text-stone-600">Waar Orania handel dryf.</p>
 
 	<section class="mt-10">

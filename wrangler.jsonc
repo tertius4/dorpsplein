@@ -11,9 +11,9 @@
 	"observability": {
 		"enabled": true
 	},
+	"vars": { "APP_ENV": "production" },
 	"previews": {
-		"observability": {
-			"enabled": true
-		}
+		"vars": { "APP_ENV": "dev" },
+		"observability": { "enabled": true }
 	}
 }
