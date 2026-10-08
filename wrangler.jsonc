@@ -8,9 +8,7 @@
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"
 	},
-	"observability": {
-		"enabled": true
-	},
+	"observability": { "enabled": true },
 	"routes": [{ "pattern": "dorpsplein.co.za", "custom_domain": true }],
 	"vars": { "APP_ENV": "production" },
 	"previews": {
@@ -18,7 +16,9 @@
 		"observability": { "enabled": true }
 	},
 	"env": {
-		"routes": [{ "pattern": "dev.dorpsplein.co.za", "custom_domain": true }],
-		"vars": { "APP_ENV": "dev" }
+		"dev": {
+			"routes": [{ "pattern": "dev.dorpsplein.co.za", "custom_domain": true }],
+			"vars": { "APP_ENV": "dev" }
+		}
 	}
 }
