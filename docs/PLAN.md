@@ -39,22 +39,22 @@ _Dienste en vakmanne word later 'n eie soort (`SERVICE`)._
 
 ## 3. Tegnologie
 
-| Laag          | Keuse                                                                             | Notas                                                                                                          |
-| ------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Raamwerk      | **SvelteKit 3** + Svelte 5, TypeScript                                            | Remote functions en `async` is nog eksperimenteel en word in `vite.config.ts` aangeskakel                      |
-| Validasie     | **Zod 4**                                                                         | Standard Schema, dus werk dit direk met remote functions en `src/env.ts`                                       |
+| Laag          | Keuse                                                                             | Notas                                                                                                                                                                                   |
+| ------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Raamwerk      | **SvelteKit 3** + Svelte 5, TypeScript                                            | Remote functions en `async` is nog eksperimenteel en word in `vite.config.ts` aangeskakel                                                                                               |
+| Validasie     | **Zod 4**                                                                         | Standard Schema, dus werk dit direk met remote functions en `src/env.ts`                                                                                                                |
 | Huisvesting   | **Cloudflare Workers** + statiese lêers                                           | `@sveltejs/adapter-cloudflare`, `nodejs_compat`. `master` → Worker `dorpsplein` (Neon `main`); ander takke → **Cloudflare Previews** (`npx wrangler preview`, eie geheime → Neon `dev`) |
-| Databasis     | **Neon Postgres**                                                                 | Gratis; skaal na nul en word self wakker. Takke `main` (produksie) en `dev`                                    |
-| ORM           | **Prisma 7.10** (vasgepen)                                                        | Generator `prisma-client`, runtime `workerd`, `@prisma/adapter-neon`. (`prisma@latest` is tans 'n 8.0-RC)      |
-| DB-koppelvlak | Eie **`DB`-objek** bo-op Prisma                                                   | `DB.listing.findMany()`, `DB.user.create()` … volledig getik                                                   |
-| Aanmelding    | **Better Auth**                                                                   | Prisma-adapter; Google + e-pos/wagwoord; verifikasie, herstel en koersbeperking                                |
-| E-pos         | **Resend**                                                                        | Gratis 3 000/maand; verifikasie- en herstel-e-posse                                                            |
-| Push          | **Web-push (VAPID)**                                                              | Met 'n Workers-versoenbare biblioteek (die gewone `web-push` werk nie op Workers nie); gestuur via `waitUntil` |
-| Foto's        | **Cloudflare R2**                                                                 | Gratis 10 GB; opgelaai deur 'n remote `form`                                                                   |
-| Vanlyn        | **Service worker** (SvelteKit se `src/service-worker.ts`) + **IndexedDB** (`idb`) | App-dop en besoekte bladsye in die kas; remote-query-antwoorde in die kas; uitkassie vir mutasies              |
-| App           | **PWA** eerste (installeerbaar, vanlyn, push)                                     | Later, indien nodig, 'n **Capacitor**-omhulsel vir Play Store / App Store. Die vanlyn-ontwerp werk in albei    |
-| Styl          | **Tailwind CSS 4**                                                                | Met die `forms`-plugin                                                                                         |
-| Toetse        | **Vitest** (services), **Playwright** (e2e)                                       |                                                                                                                |
+| Databasis     | **Neon Postgres**                                                                 | Gratis; skaal na nul en word self wakker. Takke `main` (produksie) en `dev`                                                                                                             |
+| ORM           | **Prisma 7.10** (vasgepen)                                                        | Generator `prisma-client`, runtime `workerd`, `@prisma/adapter-neon`. (`prisma@latest` is tans 'n 8.0-RC)                                                                               |
+| DB-koppelvlak | Eie **`DB`-objek** bo-op Prisma                                                   | `DB.listing.findMany()`, `DB.user.create()` … volledig getik                                                                                                                            |
+| Aanmelding    | **Better Auth**                                                                   | Prisma-adapter; Google + e-pos/wagwoord; verifikasie, herstel en koersbeperking                                                                                                         |
+| E-pos         | **Resend**                                                                        | Gratis 3 000/maand; verifikasie- en herstel-e-posse                                                                                                                                     |
+| Push          | **Web-push (VAPID)**                                                              | Met 'n Workers-versoenbare biblioteek (die gewone `web-push` werk nie op Workers nie); gestuur via `waitUntil`                                                                          |
+| Foto's        | **Cloudflare R2**                                                                 | Gratis 10 GB; opgelaai deur 'n remote `form`                                                                                                                                            |
+| Vanlyn        | **Service worker** (SvelteKit se `src/service-worker.ts`) + **IndexedDB** (`idb`) | App-dop en besoekte bladsye in die kas; remote-query-antwoorde in die kas; uitkassie vir mutasies                                                                                       |
+| App           | **PWA** eerste (installeerbaar, vanlyn, push)                                     | Later, indien nodig, 'n **Capacitor**-omhulsel vir Play Store / App Store. Die vanlyn-ontwerp werk in albei                                                                             |
+| Styl          | **Tailwind CSS 4**                                                                | Met die `forms`-plugin                                                                                                                                                                  |
+| Toetse        | **Vitest** (services), **Playwright** (e2e)                                       |                                                                                                                                                                                         |
 
 ### SvelteKit 3 — wat anders is as weergawe 2
 
@@ -573,16 +573,16 @@ Wanneer Dorpsplein as 'n app (PWA, later moontlik Capacitor) geïnstalleer is, m
 
 ### Fase 0 — Fondament (jy bou self)
 
-| Stap | Wat                                                                                                       | Jy leer                                        |
-| ---- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| 1    | `sv create` in hierdie repo: SvelteKit 3, TS, Tailwind, Cloudflare, remote functions                      | Projekstruktuur en SvelteKit 3 se konfigurasie |
-| 2    | Neon: rekening, projek, takke `main`/`dev`, gepoelde en direkte verbinding, `.env`                        | Serverless Postgres en takke                   |
-| 3    | Prisma installeer, `allowScripts` goedkeur, `prisma.config.mjs`, generator (`workerd`)                    | Prisma 7 se nuwe opstelling                    |
-| 4    | Skema: `ListingKind` + `Category`; eerste migrasie                                                        | Migrasies                                      |
-| 5    | Saad + `scripts/run.mjs`; die WASM-plugin                                                                 | Waarom Prisma op Workers WASM gebruik          |
-| 6    | `src/env.ts`; die DB-laag (`create.ts`, `client.ts`, `category.ts`, `index.ts`)                           | Een kliënt per versoek, die `DB`-patroon       |
-| 7    | Eerste remote function + SSR-bladsy; `hooks.server.ts` (`handleError`)                                    | Remote functions, `<svelte:boundary>`, SSR     |
-| 8    | `npm run build` + `npm run preview` (Wrangler, `.dev.vars`); check, lint en commit                        | Cloudflare se runtime plaaslik                 |
+| Stap | Wat                                                                                                             | Jy leer                                        |
+| ---- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| 1    | `sv create` in hierdie repo: SvelteKit 3, TS, Tailwind, Cloudflare, remote functions                            | Projekstruktuur en SvelteKit 3 se konfigurasie |
+| 2    | Neon: rekening, projek, takke `main`/`dev`, gepoelde en direkte verbinding, `.env`                              | Serverless Postgres en takke                   |
+| 3    | Prisma installeer, `allowScripts` goedkeur, `prisma.config.mjs`, generator (`workerd`)                          | Prisma 7 se nuwe opstelling                    |
+| 4    | Skema: `ListingKind` + `Category`; eerste migrasie                                                              | Migrasies                                      |
+| 5    | Saad + `scripts/run.mjs`; die WASM-plugin                                                                       | Waarom Prisma op Workers WASM gebruik          |
+| 6    | `src/env.ts`; die DB-laag (`create.ts`, `client.ts`, `category.ts`, `index.ts`)                                 | Een kliënt per versoek, die `DB`-patroon       |
+| 7    | Eerste remote function + SSR-bladsy; `hooks.server.ts` (`handleError`)                                          | Remote functions, `<svelte:boundary>`, SSR     |
+| 8    | `npm run build` + `npm run preview` (Wrangler, `.dev.vars`); check, lint en commit                              | Cloudflare se runtime plaaslik                 |
 | 9    | Cloudflare Workers gekoppel aan GitHub (`tertius4/dorpsplein`), geheime, Previews vir takke; eerste ontplooiing | CI/CD op Cloudflare                            |
 
 ✅ **Speel:** die kategorieë verskyn op `/` plaaslik en op die Cloudflare-URL. Wysig een in `npm run db:studio` en kyk hoe dit verander.
