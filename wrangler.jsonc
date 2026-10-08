@@ -9,12 +9,10 @@
 		"directory": ".svelte-kit/cloudflare"
 	},
 	"observability": { "enabled": true },
+	"workers_dev": false,
+	"preview_urls": false,
 	"routes": [{ "pattern": "dorpsplein.co.za", "custom_domain": true }],
 	"vars": { "APP_ENV": "production" },
-	"previews": {
-		"vars": { "APP_ENV": "dev" },
-		"observability": { "enabled": true }
-	},
 	"env": {
 		"dev": {
 			"routes": [{ "pattern": "dev.dorpsplein.co.za", "custom_domain": true }],
