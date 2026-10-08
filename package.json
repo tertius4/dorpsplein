@@ -7,7 +7,7 @@
 		"dev": "vite dev",
 		"build": "wrangler types --check && vite build",
 		"preview": "wrangler pages dev .svelte-kit/cloudflare --port 4173",
-		"prepare": "svelte-kit sync || echo ''",
+		"prepare": "svelte-kit sync && prisma generate",
 		"check": "wrangler types --check && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
@@ -15,7 +15,10 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
 		"test:e2e": "playwright install && playwright test",
-		"gen": "wrangler types"
+		"gen": "wrangler types",
+		"db:generate": "prisma generate",
+		"db:migrate": "prisma migrate dev",
+		"db:studio": "prisma studio"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
@@ -25,7 +28,8 @@
 		"@sveltejs/vite-plugin-svelte": "^7.2.0",
 		"@tailwindcss/forms": "^0.5.11",
 		"@tailwindcss/vite": "^4.3.0",
-		"@types/node": "^24",
+		"@types/node": "^24.19.1",
+		"dotenv": "^18.0.6",
 		"eslint": "^10.4.1",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.19.0",
@@ -33,6 +37,7 @@
 		"prettier": "^3.8.3",
 		"prettier-plugin-svelte": "^4.1.0",
 		"prettier-plugin-tailwindcss": "^0.8.0",
+		"prisma": "^7.10.0",
 		"svelte": "^5.57.1",
 		"svelte-check": "^4.6.0",
 		"tailwindcss": "^4.3.0",
@@ -45,5 +50,16 @@
 	"imports": {
 		"#lib": "./src/lib/index.js",
 		"#lib/*": "./src/lib/*"
+	},
+	"dependencies": {
+		"@prisma/adapter-neon": "^7.10.0",
+		"@prisma/client": "^7.10.0",
+		"zod": "^4.6.5"
+	},
+	"allowScripts": {
+		"@prisma/engines@7.10.0": true,
+		"esbuild@0.28.1": true,
+		"prisma@7.10.0": true,
+		"workerd@1.20261006.1": true
 	}
 }
