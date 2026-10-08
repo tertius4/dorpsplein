@@ -13,3 +13,18 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum ListingKind {
+  JOB
+}
+
+model Category {
+  id        Int           @id @default(autoincrement())
+  kind      ListingKind
+  name      String
+  icon      String?
+  sortOrder Int           @default(0)
+  active    Boolean       @default(true)
+
+  @@unique([kind, name])
+}

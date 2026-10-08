@@ -8,6 +8,6 @@ export default defineConfig({
 	},
 	datasource: {
 		// For prisma migrations (non pooled connections)
-		url: process.env.DATABASE_URL
+		url: process.env.DIRECT_URL
 	}
 });
