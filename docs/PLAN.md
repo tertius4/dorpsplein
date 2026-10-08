@@ -43,7 +43,7 @@ _Dienste en vakmanne word later 'n eie soort (`SERVICE`)._
 | ------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | Raamwerk      | **SvelteKit 3** + Svelte 5, TypeScript                                            | Remote functions en `async` is nog eksperimenteel en word in `vite.config.ts` aangeskakel                      |
 | Validasie     | **Zod 4**                                                                         | Standard Schema, dus werk dit direk met remote functions en `src/env.ts`                                       |
-| Huisvesting   | **Cloudflare Pages**                                                              | `@sveltejs/adapter-cloudflare`, `nodejs_compat`                                                                |
+| Huisvesting   | **Cloudflare Workers** + statiese lêers                                           | `@sveltejs/adapter-cloudflare`, `nodejs_compat`. Worker `dorpsplein` (master → Neon `main`) en `dorpsplein-preview` (ander takke → Neon `dev`) |
 | Databasis     | **Neon Postgres**                                                                 | Gratis; skaal na nul en word self wakker. Takke `main` (produksie) en `dev`                                    |
 | ORM           | **Prisma 7.10** (vasgepen)                                                        | Generator `prisma-client`, runtime `workerd`, `@prisma/adapter-neon`. (`prisma@latest` is tans 'n 8.0-RC)      |
 | DB-koppelvlak | Eie **`DB`-objek** bo-op Prisma                                                   | `DB.listing.findMany()`, `DB.user.create()` … volledig getik                                                   |
@@ -583,7 +583,7 @@ Wanneer Dorpsplein as 'n app (PWA, later moontlik Capacitor) geïnstalleer is, m
 | 6    | `src/env.ts`; die DB-laag (`create.ts`, `client.ts`, `category.ts`, `index.ts`)                           | Een kliënt per versoek, die `DB`-patroon       |
 | 7    | Eerste remote function + SSR-bladsy; `hooks.server.ts` (`handleError`)                                    | Remote functions, `<svelte:boundary>`, SSR     |
 | 8    | `npm run build` + `npm run preview` (Wrangler, `.dev.vars`); check, lint en commit                        | Cloudflare se runtime plaaslik                 |
-| 9    | Cloudflare Pages gekoppel aan GitHub (`tertius4/dorpsplein`) + omgewingsveranderlikes; eerste ontplooiing | CI/CD op Cloudflare                            |
+| 9    | Cloudflare Workers gekoppel aan GitHub (`tertius4/dorpsplein`), geheime, preview-Worker; eerste ontplooiing | CI/CD op Cloudflare                            |
 
 ✅ **Speel:** die kategorieë verskyn op `/` plaaslik en op die Cloudflare-URL. Wysig een in `npm run db:studio` en kyk hoe dit verander.
 
