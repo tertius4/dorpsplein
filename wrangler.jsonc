@@ -12,6 +12,6 @@
 		"enabled": true
 	},
 	"env": {
-		"preview": {}
+		"previews": { "observability": { "enabled": true } }
 	}
 }
