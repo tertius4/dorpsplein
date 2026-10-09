@@ -17,7 +17,7 @@
 		<a href="/" class="font-semibold text-stone-900">Dorpsplein</a>
 		{#if user}
 			<form {...signOut} class="flex items-center gap-3 text-sm">
-				<span class="text-stone-600">{user.name}</span>
+				<a href="/profiel" class="text-stone-600 hover:underline">{user.name}</a>
 				<button class="underline">Teken uit</button>
 			</form>
 		{:else}

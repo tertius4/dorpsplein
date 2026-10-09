@@ -4,7 +4,8 @@ import { DB } from '#lib/server/db/index.ts';
 import { requireUser } from '#lib/server/guards.ts';
 import { JOB_TYPE_LABELS } from '#lib/server/services/kinds/job.ts';
 import * as onboarding from '#lib/server/services/onboarding.ts';
-import { JOB_TYPES, onboardingSchema } from '#lib/schemas/onboarding.ts';
+import { JOB_TYPES } from '#lib/schemas/fields.ts';
+import { onboardingSchema } from '#lib/schemas/onboarding.ts';
 
 /** Alles wat /begin moet wys, reeds in Afrikaans. */
 export const getOnboardingOptions = query(async () => {

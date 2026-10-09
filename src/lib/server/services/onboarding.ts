@@ -1,14 +1,12 @@
 import type { OnboardingInput } from '#lib/schemas/onboarding.ts';
 import { getRequestEvent } from '$app/server';
-import { error } from '@sveltejs/kit';
 import { DB } from '../db/index.ts';
+import { assertActiveJobCategories } from './profile.ts';
 
 const ONBOARDED_COOKIE = 'dp_onboarded';
 
 export async function completeOnboarding(userId: string, input: OnboardingInput) {
-	// Die bladsy wys net aktiewe kategorieë. Enigiets anders is gepeuter.
-	const active = new Set((await DB.category.findActive('JOB')).map((c) => c.id));
-	if (!input.categoryIds.every((id) => active.has(id))) error(400, 'Ongeldige kategorie');
+	await assertActiveJobCategories(input.categoryIds);
 
 	await DB.$transaction(async (tx) => {
 		await DB.profile.upsert(
