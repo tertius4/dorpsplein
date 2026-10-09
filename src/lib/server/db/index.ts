@@ -1,11 +1,11 @@
-import type { Prisma } from './generated/client.ts';
 import { category } from './category.ts';
 import { prisma } from './client.ts';
+import type { Transaction } from './create.ts';
 
 export const DB = {
 	category,
 
-	$transaction: <T>(fn: (tx: Prisma.TransactionClient) => Promise<T>) => prisma().$transaction(fn)
+	$transaction: <T>(fn: (tx: Transaction) => Promise<T>) => prisma().$transaction(fn)
 };
 
 export type * from './generated/client.ts';

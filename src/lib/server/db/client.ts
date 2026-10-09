@@ -1,12 +1,12 @@
 import { getRequestEvent } from '$app/server';
 import { DATABASE_URL } from '$app/env/private';
 import { createPrisma } from './create.ts';
-import type { PrismaClient } from './generated/client';
+import type { Database, Transaction } from './create.ts';
 import type { RequestEvent } from '@sveltejs/kit';
 
-const clients = new WeakMap<RequestEvent, PrismaClient>();
+const clients = new WeakMap<RequestEvent, Database>();
 
-export function prisma(): PrismaClient {
+export function prisma(): Database {
 	const event = getRequestEvent();
 	let client = clients.get(event);
 	if (!client) {

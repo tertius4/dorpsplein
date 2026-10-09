@@ -17,7 +17,7 @@
 		"test:e2e": "playwright install && playwright test",
 		"gen": "wrangler types",
 		"db:generate": "prisma generate",
-		"db:migrate": "prisma migrate dev",
+		"db:migrate": "prisma migrate dev && prisma generate",
 		"db:studio": "prisma studio",
 		"db:seed": "prisma db seed",
 		"db:deploy": "prisma migrate deploy"
