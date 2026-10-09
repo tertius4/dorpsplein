@@ -11,6 +11,7 @@ import { error, invalid, redirect } from '@sveltejs/kit';
 import { isAPIError } from 'better-auth/api';
 import { auth } from '#lib/server/auth.ts';
 import { z } from 'zod';
+import { forgetOnboarded } from '#lib/server/services/onboarding.ts';
 
 /** Only return what the UI needs. */
 export const getCurrentUser = query(async () => {
@@ -56,6 +57,7 @@ export const signIn = form(signInSchema, async ({ email, _password, redirect_to 
 
 export const signOut = form(async () => {
 	await auth().api.signOut({ headers: getRequestEvent().request.headers });
+	forgetOnboarded();
 	redirect(303, '/');
 });
 

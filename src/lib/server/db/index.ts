@@ -1,10 +1,12 @@
 import { category } from './category.ts';
 import { prisma } from './client.ts';
 import type { Transaction } from './create.ts';
+import { profile } from './profile.ts';
 import { rateLimit } from './rate-limit.ts';
 
 export const DB = {
 	category,
+	profile,
 	rateLimit,
 
 	$transaction: <T>(fn: (tx: Transaction) => Promise<T>) => prisma().$transaction(fn)

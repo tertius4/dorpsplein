@@ -1,19 +1,39 @@
+import { isOnboarded } from '#lib/server/services/onboarding.ts';
 import type { HandleServerError } from '@sveltejs/kit/hooks';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 import type { Handle } from '@sveltejs/kit/hooks';
 import { auth } from '#lib/server/auth.ts';
 import { building } from '$app/env';
-import { redirect } from '@sveltejs/kit';
+import { redirect, type RequestEvent } from '@sveltejs/kit';
 
-/** Bladsye net vir mense wat nie aangemeld is nie. */
-const GUEST_ONLY = new Set(['/teken-in', '/registreer']);
+function routeGroup(routeId: string | null) {
+	return routeId?.match(/^\/\(([^)]+)\)/)?.[1] ?? null;
+}
+
+async function guard(event: RequestEvent) {
+	if (event.isRemoteRequest) return; // remote functions beskerm hulself (requireUser)
+
+	const { user } = event.locals;
+	const group = routeGroup(event.route.id);
+	const signIn = `/teken-in?na=${encodeURIComponent(event.url.pathname + event.url.search)}`;
+
+	if (event.route.id === '/' && user) redirect(303, '/tuis');
+	if (group === 'guest' && user) redirect(303, '/tuis');
+
+	if (group === 'onboarding' || group === 'app') {
+		if (!user) redirect(303, signIn);
+		const onboarded = await isOnboarded(user.id);
+		if (group === 'app' && !onboarded) redirect(303, '/begin');
+		if (group === 'onboarding' && onboarded) redirect(303, '/tuis');
+	}
+}
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const session = await auth().api.getSession({ headers: event.request.headers });
 	event.locals.user = session?.user ?? null;
 	event.locals.session = session?.session ?? null;
 
-	if (event.locals.user && GUEST_ONLY.has(event.url.pathname)) redirect(303, '/');
+	await guard(event);
 
 	return svelteKitHandler({ event, resolve, auth: auth(), building });
 };
