@@ -1,7 +1,7 @@
 import { getRequestEvent } from '$app/server';
 import { DATABASE_URL } from '$app/env/private';
 import { createPrisma } from './create.ts';
-import type { Database, Transaction } from './create.ts';
+import type { Database } from './create.ts';
 import type { RequestEvent } from '@sveltejs/kit';
 
 const clients = new WeakMap<RequestEvent, Database>();
