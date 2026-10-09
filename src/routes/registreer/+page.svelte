@@ -31,7 +31,7 @@
 				required
 				class="mt-1 block w-full rounded-md border-stone-300"
 			/>
-			{#each signUp.fields.email.issues() ?? [] as issue}
+			{#each signUp.fields.email.issues() ?? [] as issue (issue.message)}
 				<span class="text-sm text-red-700">{issue.message}</span>
 			{/each}
 		</label>
@@ -44,7 +44,7 @@
 				required
 				class="mt-1 block w-full rounded-md border-stone-300"
 			/>
-			{#each signUp.fields._password.issues() ?? [] as issue}
+			{#each signUp.fields._password.issues() ?? [] as issue (issue.message)}
 				<span class="text-sm text-red-700">{issue.message}</span>
 			{/each}
 		</label>

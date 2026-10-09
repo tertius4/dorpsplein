@@ -19,5 +19,13 @@ export const variables = defineEnvVars({
 		public: true,
 		description: 'Publieke basis-URL van die app, bv. https://dorpsplein.co.za',
 		schema: z.url()
+	},
+	RESEND_API_KEY: {
+		description: 'Resend-sleutel (net stuur). Leeg plaaslik: e-posse word dan gelog.',
+		schema: z.string().optional()
+	},
+	EMAIL_FROM: {
+		description: 'Afsender, bv. Dorpsplein <geen-antwoord@pos.dorpsplein.co.za>',
+		schema: z.string().min(3)
 	}
 });
