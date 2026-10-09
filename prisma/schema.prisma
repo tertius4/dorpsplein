@@ -26,6 +26,8 @@ model Category {
   sortOrder Int           @default(0)
   active    Boolean       @default(true)
 
+  interests Interest[]
+
   @@unique([kind, name])
 }
 
@@ -40,8 +42,13 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  sessions Session[]
-  accounts Account[]
+  sessions       Session[]
+  accounts       Account[]
+  profile        Profile?
+  workerProfile  WorkerProfile?
+  interests      Interest[]
+  jobTypePrefs   JobTypePreference[]
+  qualifications Qualification[]
 }
 
 /// 'n Aangemelde toestel. Die koekie bevat `token`.
@@ -99,4 +106,72 @@ model RateLimit {
   lastRequest BigInt
 }
 
-// ---------- END Better Auth ----------
+// ---------- Profiel (algemeen) ----------
+
+/// Dorpsplein se data oor 'n gebruiker. Word in /begin geskep.
+model Profile {
+  userId         String    @id
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline       String?   @db.VarChar(80)   // "Ervare messelaar en teëlwerker"
+  bio            String?   @db.VarChar(1000)
+  photoKey       String?                     // R2-sleutel; val terug op User.image
+  phone          String?   @db.VarChar(20)   // net gedeel ná ACCEPTED
+  available      Boolean   @default(true)    // af = geen nuwe-plasing-kennisgewings
+  isAdmin        Boolean   @default(false)
+  blocked        Boolean   @default(false)
+  popiaConsentAt DateTime?                   // null = /begin nog nie voltooi
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+/// Kwalifikasies: "Elektrisiën – Trade Test", "Eerstehulp Vlak 1".
+model Qualification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String   @db.VarChar(120)
+  issuer    String?  @db.VarChar(120)
+  year      Int?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// "Stuur my kennisgewings oor hierdie kategorie." Die basis van passing.
+model Interest {
+  userId          String
+  categoryId      Int
+  yearsExperience Int?
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category        Category @relation(fields: [categoryId], references: [id])
+  createdAt       DateTime @default(now())
+
+  @@id([userId, categoryId])
+  @@index([categoryId])
+}
+
+// ---------- Werk-spesifiek ----------
+
+enum JobType {
+  PERMANENT
+  PART_TIME
+  ODD_JOB
+  SEASONAL
+}
+
+model WorkerProfile {
+  userId         String   @id
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  driversLicence Boolean  @default(false)
+  ownTransport   Boolean  @default(false)
+  updatedAt      DateTime @updatedAt
+}
+
+model JobTypePreference {
+  userId  String
+  jobType JobType
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, jobType])
+  @@index([jobType])
+}
