@@ -7,9 +7,10 @@ import {
 } from '#lib/schemas/auth.ts';
 import { form, getRequestEvent, query } from '$app/server';
 import { safeRedirect } from '#lib/server/http.ts';
-import { invalid, redirect } from '@sveltejs/kit';
+import { error, invalid, redirect } from '@sveltejs/kit';
 import { isAPIError } from 'better-auth/api';
 import { auth } from '#lib/server/auth.ts';
+import { z } from 'zod';
 
 /** Only return what the UI needs. */
 export const getCurrentUser = query(async () => {
@@ -84,3 +85,22 @@ export const resetPassword = form(resetPasswordSchema, async ({ token, _password
 	}
 	redirect(303, '/teken-in?herstel=klaar');
 });
+
+export const signInWithGoogle = form(
+	z.object({ redirect_to: z.string().optional() }),
+	async ({ redirect_to }) => {
+		const { url } = await auth().api.signInSocial({
+			body: {
+				provider: 'google',
+				callbackURL: safeRedirect(redirect_to),
+				errorCallbackURL: '/teken-in',
+				disableRedirect: true
+			},
+			headers: getRequestEvent().request.headers
+		});
+
+		if (!url) error(500, 'Kon nie na Google stuur nie');
+
+		redirect(303, url, { external: true });
+	}
+);

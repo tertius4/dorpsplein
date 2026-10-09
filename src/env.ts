@@ -27,5 +27,14 @@ export const variables = defineEnvVars({
 	EMAIL_FROM: {
 		description: 'Afsender, bv. Dorpsplein <geen-antwoord@pos.dorpsplein.co.za>',
 		schema: z.string().min(3)
+	},
+	GOOGLE_CLIENT_ID: {
+		public: true,
+		description: 'Google OAuth-kliënt-ID (een per omgewing).',
+		schema: z.string().min(1)
+	},
+	GOOGLE_CLIENT_SECRET: {
+		description: 'Google OAuth-kliëntgeheim.',
+		schema: z.string().min(1)
 	}
 });

@@ -1,5 +1,6 @@
+import { GOOGLE_CLIENT_SECRET } from '$app/env/private';
 import { betterAuth } from 'better-auth';
-import { BETTER_AUTH_URL, APP_ENV } from '$app/env/public';
+import { GOOGLE_CLIENT_ID, BETTER_AUTH_URL, APP_ENV } from '$app/env/public';
 import { BETTER_AUTH_SECRET } from '$app/env/private';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { prisma } from './db/client';
@@ -23,6 +24,18 @@ function createAuth() {
 		baseURL: BETTER_AUTH_URL,
 		secret: BETTER_AUTH_SECRET,
 		database: prismaAdapter(requestPrisma, { provider: 'postgresql' }),
+
+		socialProviders: {
+			google: {
+				clientId: GOOGLE_CLIENT_ID,
+				clientSecret: GOOGLE_CLIENT_SECRET,
+				prompt: 'select_account'
+			}
+		},
+
+		account: {
+			encryptOAuthTokens: true
+		},
 
 		emailAndPassword: {
 			enabled: true,

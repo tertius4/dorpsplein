@@ -15,7 +15,8 @@
 	"vars": {
 		"APP_ENV": "production",
 		"BETTER_AUTH_URL": "https://dorpsplein.co.za",
-		"EMAIL_FROM": "Dorpsplein <geen-antwoord@pos.dorpsplein.co.za>"
+		"EMAIL_FROM": "Dorpsplein <geen-antwoord@pos.dorpsplein.co.za>",
+		"GOOGLE_CLIENT_ID": "275952773561-l9thqm53v8bv0lv5se9m8cs1hj3l4muk.apps.googleusercontent.com"
 	},
 	"env": {
 		"dev": {
@@ -23,7 +24,8 @@
 			"vars": {
 				"APP_ENV": "dev",
 				"BETTER_AUTH_URL": "https://dev.dorpsplein.co.za",
-				"EMAIL_FROM": "Dorpsplein <geen-antwoord@pos.dorpsplein.co.za>"
+				"EMAIL_FROM": "Dorpsplein <geen-antwoord@pos.dorpsplein.co.za>",
+				"GOOGLE_CLIENT_ID": "275952773561-g401qbusnhq3vpnaqgunj871bi00jflu.apps.googleusercontent.com"
 			}
 		}
 	}

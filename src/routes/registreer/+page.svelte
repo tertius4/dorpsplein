@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { signUp } from '#lib/remote/auth.remote.ts';
+	import { signInWithGoogle, signUp } from '#lib/remote/auth.remote.ts';
+	import { page } from '$app/state';
 </script>
 
 <svelte:head>
@@ -8,6 +9,12 @@
 
 <main class="mx-auto max-w-sm px-4 py-12">
 	<h1 class="text-2xl font-bold text-stone-900">Skep ’n rekening</h1>
+
+	{#if page.url.searchParams.get('error')}
+		<p class="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
+			Aanmelding met Google het nie geslaag nie. Probeer weer, of gebruik jou e-pos.
+		</p>
+	{/if}
 
 	<form {...signUp} class="mt-6 space-y-4">
 		<label class="block">
@@ -58,6 +65,21 @@
 			class="w-full rounded-md bg-stone-900 px-4 py-2 font-medium text-white disabled:opacity-50"
 		>
 			Registreer
+		</button>
+	</form>
+
+	<div class="my-6 flex items-center gap-3 text-sm text-stone-500">
+		<span class="h-px flex-1 bg-stone-200"></span>of<span class="h-px flex-1 bg-stone-200"></span>
+	</div>
+
+	<form {...signInWithGoogle}>
+		<input
+			{...signInWithGoogle.fields.redirect_to.as('hidden', page.url.searchParams.get('na') ?? '')}
+		/>
+		<button
+			class="w-full rounded-md border border-stone-300 bg-white px-4 py-2 font-medium text-stone-800"
+		>
+			Gaan voort met Google
 		</button>
 	</form>
 
