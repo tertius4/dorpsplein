@@ -12,22 +12,15 @@ export const getCurrentUser = query(async () => {
 	return user ? { id: user.id, name: user.name } : null;
 });
 
-export const signUp = form(signUpSchema, async ({ name, email, _password }, issue) => {
+export const signUp = form(signUpSchema, async ({ name, email, _password }) => {
 	const isSignUpWithinLimit = await withinLimit(`sign-up:ip:${clientIp()}`, RULES.signUpIp);
 	if (!isSignUpWithinLimit) invalid(TOO_MANY_ATTEMPTS);
 
-	try {
-		await auth().api.signUpEmail({
-			body: { name, email, password: _password },
-			headers: getRequestEvent().request.headers
-		});
-	} catch (e) {
-		if (isAPIError(e) && e.body?.code?.startsWith('USER_ALREADY_EXISTS')) {
-			invalid(issue.email('Daar is reeds ’n rekening met hierdie e-pos. Meld eerder aan.'));
-		}
-		throw e;
-	}
-	redirect(303, '/');
+	await auth().api.signUpEmail({
+		body: { name, email, password: _password, callbackURL: '/e-pos-bevestig' },
+		headers: getRequestEvent().request.headers
+	});
+	redirect(303, '/registreer/kyk-jou-e-pos');
 });
 
 export const signIn = form(signInSchema, async ({ email, _password, redirect_to }) => {
@@ -44,6 +37,11 @@ export const signIn = form(signInSchema, async ({ email, _password, redirect_to 
 	} catch (e) {
 		if (isAPIError(e) && e.body?.code === 'INVALID_EMAIL_OR_PASSWORD') {
 			invalid('E-pos of wagwoord is verkeerd.');
+		}
+		if (isAPIError(e) && e.body?.code === 'EMAIL_NOT_VERIFIED') {
+			invalid(
+				'Jou e-pos is nog nie bevestig nie. Ons het ’n nuwe skakel gestuur; kyk in jou inkassie (en spam).'
+			);
 		}
 		throw e;
 	}

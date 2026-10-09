@@ -6,6 +6,9 @@ import { prisma } from './db/client';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
 import { getRequestEvent } from '$app/server';
 import type { Database } from './db/create';
+import { runInBackground } from './background';
+import { sendEmail } from './email';
+import { accountExists, verifyEmail } from './emails';
 
 const requestPrisma = new Proxy({} as Database, {
 	get(_, prop) {
@@ -23,9 +26,31 @@ function createAuth() {
 
 		emailAndPassword: {
 			enabled: true,
-			minPasswordLength: 8
+			minPasswordLength: 8,
+			requireEmailVerification: true,
+			onExistingUserSignUp: async ({ user }) => {
+				runInBackground(
+					sendEmail({
+						to: user.email,
+						...accountExists({
+							name: user.name,
+							signInUrl: `${BETTER_AUTH_URL}/teken-in`,
+							resetUrl: `${BETTER_AUTH_URL}/wagwoord-vergeet`
+						})
+					})
+				);
+			}
 		},
 
+		emailVerification: {
+			sendOnSignUp: true,
+			sendOnSignIn: true, // ongeverifieerd aanmeld → stuur weer 'n skakel
+			autoSignInAfterVerification: true,
+			expiresIn: 60 * 60 * 24, // 24 uur
+			sendVerificationEmail: async ({ user, url }) => {
+				await sendEmail({ to: user.email, ...verifyEmail({ name: user.name, url }) });
+			}
+		},
 		session: {
 			expiresIn: 60 * 60 * 24 * 30, // 30 days
 			updateAge: 60 * 60 * 24, // extend at least once a day.
@@ -39,7 +64,8 @@ function createAuth() {
 
 		advanced: {
 			// Cloudflare gee die regte kliënt-IP in hierdie header
-			ipAddress: { ipAddressHeaders: ['cf-connecting-ip'] }
+			ipAddress: { ipAddressHeaders: ['cf-connecting-ip'] },
+			backgroundTasks: { handler: runInBackground }
 		},
 
 		// sveltekitCookies must be the last plugin

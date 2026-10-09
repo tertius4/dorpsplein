@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
-		"preview": "wrangler dev --port 4173",
+		"preview": "wrangler dev --port 4173 --local-upstream localhost:4173 --upstream-protocol http",
 		"prepare": "svelte-kit sync && wrangler types && prisma generate",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
