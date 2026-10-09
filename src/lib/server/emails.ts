@@ -48,3 +48,27 @@ export function accountExists({
 		)
 	};
 }
+
+export function resetPassword({ name, url }: { name: string; url: string }): Template {
+	return {
+		subject: 'Stel jou wagwoord terug',
+		text: `Hallo ${name}\n\nMaak hierdie skakel oop om 'n nuwe wagwoord vir Dorpsplein te kies:\n${url}\n\nDie skakel is 1 uur geldig. As jy nie gevra het nie, ignoreer hierdie e-pos; jou wagwoord bly dieselfde.`,
+		html: layout(
+			`Hallo ${escape(name)}`,
+			`<p>Kies ’n nuwe wagwoord vir Dorpsplein:</p>${button(url, 'Kies ’n nuwe wagwoord')}
+<p style="font-size:.85rem">Die skakel is 1 uur geldig. As jy nie gevra het nie, ignoreer hierdie e-pos; jou wagwoord bly dieselfde.</p>`
+		)
+	};
+}
+
+export function passwordChanged({ name, resetUrl }: { name: string; resetUrl: string }): Template {
+	return {
+		subject: 'Jou wagwoord is verander',
+		text: `Hallo ${name}\n\nJou Dorpsplein-wagwoord is pas verander, en jy is op alle toestelle afgemeld.\n\nAs dit nie jy was nie, stel dit dadelik terug: ${resetUrl}`,
+		html: layout(
+			`Hallo ${escape(name)}`,
+			`<p>Jou Dorpsplein-wagwoord is pas verander, en jy is op alle toestelle afgemeld.</p>
+<p>As dit <strong>nie</strong> jy was nie, stel dit dadelik terug:</p>${button(resetUrl, 'Stel wagwoord terug')}`
+		)
+	};
+}

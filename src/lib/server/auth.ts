@@ -8,7 +8,7 @@ import { getRequestEvent } from '$app/server';
 import type { Database } from './db/create';
 import { runInBackground } from './background';
 import { sendEmail } from './email';
-import { accountExists, verifyEmail } from './emails';
+import { accountExists, passwordChanged, resetPassword, verifyEmail } from './emails';
 
 const requestPrisma = new Proxy({} as Database, {
 	get(_, prop) {
@@ -37,6 +37,19 @@ function createAuth() {
 							signInUrl: `${BETTER_AUTH_URL}/teken-in`,
 							resetUrl: `${BETTER_AUTH_URL}/wagwoord-vergeet`
 						})
+					})
+				);
+			},
+			resetPasswordTokenExpiresIn: 60 * 60, // 1 uur
+			revokeSessionsOnPasswordReset: true,
+			sendResetPassword: async ({ user, url }) => {
+				await sendEmail({ to: user.email, ...resetPassword({ name: user.name, url }) });
+			},
+			onPasswordReset: async ({ user }) => {
+				runInBackground(
+					sendEmail({
+						to: user.email,
+						...passwordChanged({ name: user.name, resetUrl: `${BETTER_AUTH_URL}/wagwoord-vergeet` })
 					})
 				);
 			}

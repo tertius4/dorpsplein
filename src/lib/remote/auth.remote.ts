@@ -1,5 +1,10 @@
 import { clientIp, RULES, TOO_MANY_ATTEMPTS, withinLimit } from '#lib/server/rate-limit.ts';
-import { signInSchema, signUpSchema } from '#lib/schemas/auth.ts';
+import {
+	forgotPasswordSchema,
+	resetPasswordSchema,
+	signInSchema,
+	signUpSchema
+} from '#lib/schemas/auth.ts';
 import { form, getRequestEvent, query } from '$app/server';
 import { safeRedirect } from '#lib/server/http.ts';
 import { invalid, redirect } from '@sveltejs/kit';
@@ -51,4 +56,31 @@ export const signIn = form(signInSchema, async ({ email, _password, redirect_to 
 export const signOut = form(async () => {
 	await auth().api.signOut({ headers: getRequestEvent().request.headers });
 	redirect(303, '/');
+});
+
+export const forgotPassword = form(forgotPasswordSchema, async ({ email }) => {
+	const ipOk = await withinLimit(`forgot-password:ip:${clientIp()}`, RULES.forgotPasswordIp);
+	const emailOk = await withinLimit(`forgot-password:email:${email}`, RULES.forgotPasswordEmail);
+	if (!ipOk || !emailOk) invalid(TOO_MANY_ATTEMPTS);
+
+	await auth().api.requestPasswordReset({
+		body: { email, redirectTo: '/wagwoord-herstel' },
+		headers: getRequestEvent().request.headers
+	});
+	return { sent: true };
+});
+
+export const resetPassword = form(resetPasswordSchema, async ({ token, _password }) => {
+	try {
+		await auth().api.resetPassword({
+			body: { token, newPassword: _password },
+			headers: getRequestEvent().request.headers
+		});
+	} catch (e) {
+		if (isAPIError(e) && e.body?.code === 'INVALID_TOKEN') {
+			invalid('Die skakel het verval of is reeds gebruik. Vra ’n nuwe een aan.');
+		}
+		throw e;
+	}
+	redirect(303, '/teken-in?herstel=klaar');
 });

@@ -6,7 +6,9 @@ type Rule = { max: number; windowSeconds: number };
 export const RULES = {
 	signInEmail: { max: 5, windowSeconds: 15 * 60 },
 	signInIp: { max: 20, windowSeconds: 15 * 60 },
-	signUpIp: { max: 5, windowSeconds: 60 * 60 }
+	signUpIp: { max: 5, windowSeconds: 60 * 60 },
+	forgotPasswordEmail: { max: 3, windowSeconds: 60 * 60 },
+	forgotPasswordIp: { max: 10, windowSeconds: 60 * 60 }
 } satisfies Record<string, Rule>;
 
 export function clientIp() {
