@@ -1,5 +1,6 @@
 # Dorpsplein — Plan
 
+
 ## 1. Visie
 
 **Dorpsplein** bring enige twee mense in Orania bymekaar wat met mekaar handel wil dryf: 'n aanstelling, 'n diens, 'n produk, enigiets.
