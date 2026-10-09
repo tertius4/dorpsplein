@@ -27,6 +27,7 @@ export function createPrisma(connectionString: string) {
 
 /** Ons kliënt-tipe, ná die uitbreiding. */
 export type Database = ReturnType<typeof createPrisma>;
-
 /** Die kliënt wat 'n `$transaction`-terugroep kry. */
 export type Transaction = Parameters<Parameters<Database['$transaction']>[0]>[0];
+/** Óf die gewone kliënt, óf 'n transaksie, sodat repos albei kan gebruik. */
+export type Db = Database | Transaction;
