@@ -12,11 +12,11 @@
 	"workers_dev": false,
 	"preview_urls": false,
 	"routes": [{ "pattern": "dorpsplein.co.za", "custom_domain": true }],
-	"vars": { "APP_ENV": "production" },
+	"vars": { "APP_ENV": "production", "BETTER_AUTH_URL": "https://dorpsplein.co.za" },
 	"env": {
 		"dev": {
 			"routes": [{ "pattern": "dev.dorpsplein.co.za", "custom_domain": true }],
-			"vars": { "APP_ENV": "dev" }
+			"vars": { "APP_ENV": "dev", "BETTER_AUTH_URL": "https://dev.dorpsplein.co.za" }
 		}
 	}
 }

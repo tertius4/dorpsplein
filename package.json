@@ -56,6 +56,7 @@
 	"dependencies": {
 		"@prisma/adapter-neon": "^7.10.0",
 		"@prisma/client": "^7.10.0",
+		"better-auth": "1.7.7",
 		"zod": "^4.6.5"
 	},
 	"allowScripts": {
@@ -63,5 +64,10 @@
 		"esbuild@0.28.1": true,
 		"prisma@7.10.0": true,
 		"workerd@1.20261006.1": true
+	},
+	"overrides": {
+		"better-auth": {
+			"@sveltejs/kit": "$@sveltejs/kit"
+		}
 	}
 }

@@ -10,5 +10,14 @@ export const variables = defineEnvVars({
 		public: true,
 		description: 'Waar die app loop: production, dev of local',
 		schema: z.enum(['production', 'dev', 'local']).default('local')
+	},
+	BETTER_AUTH_SECRET: {
+		description: 'Ondertekeningsleutel vir sessies en tokens (uniek per omgewing).',
+		schema: z.string().min(32)
+	},
+	BETTER_AUTH_URL: {
+		public: true,
+		description: 'Publieke basis-URL van die app, bv. https://dorpsplein.co.za',
+		schema: z.url()
 	}
 });
