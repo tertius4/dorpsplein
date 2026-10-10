@@ -1,13 +1,17 @@
 <script lang="ts">
+	import { resizeImage } from '#lib/client/resize-image.ts';
+	import Avatar from '#lib/components/Avatar.svelte';
 	import {
 		addQualification,
 		getMyProfile,
+		removePhoto,
 		removeQualification,
 		setAvailable,
 		setPublicProfile,
 		updateAbout,
 		updateInterests,
-		updateJobPreferences
+		updateJobPreferences,
+		uploadPhoto
 	} from '#lib/remote/profile.remote.ts';
 
 	const me = $derived(await getMyProfile());
@@ -19,6 +23,33 @@
 	async function remove(id: string, name: string) {
 		if (confirm(`Verwyder “${name}”?`)) await removeQualification(id);
 	}
+
+	let photoForm: HTMLFormElement;
+	let photoInput: HTMLInputElement;
+	let isResizing = $state(false);
+	let photoError = $state('');
+
+	/** Verklein in die blaaier (verwyder ook GPS-metadata), dan dien die versteekte vorm in. */
+	async function choosePhoto(event: Event & { currentTarget: HTMLInputElement }) {
+		const picker = event.currentTarget;
+		const file = picker.files?.[0];
+		if (!file) return;
+
+		photoError = '';
+		isResizing = true;
+		try {
+			const small = await resizeImage(file);
+			const transfer = new DataTransfer();
+			transfer.items.add(small);
+			photoInput.files = transfer.files;
+			photoForm.requestSubmit();
+		} catch {
+			photoError = 'Kon nie die foto lees nie. Probeer ’n ander een.';
+		} finally {
+			isResizing = false;
+			picker.value = '';
+		}
+	}
 </script>
 
 <svelte:head>
@@ -27,6 +58,33 @@
 
 <main class="mx-auto max-w-lg space-y-10 px-4 py-12">
 	<h1 class="text-2xl font-bold text-stone-900">My profiel</h1>
+
+	<section class="flex items-center gap-4">
+		<Avatar name={me.name} image={me.photo} size={80} />
+		<div class="space-y-2">
+			<label
+				class="inline-block cursor-pointer rounded-md border border-stone-300 bg-white px-3 py-1.5 text-sm font-medium text-stone-800"
+			>
+				{isResizing || uploadPhoto.pending > 0 ? 'Besig…' : 'Kies ’n foto'}
+				<input type="file" accept="image/*" class="sr-only" onchange={choosePhoto} />
+			</label>
+			{#if me.hasOwnPhoto}
+				<button
+					type="button"
+					onclick={() => removePhoto()}
+					class="block text-sm text-red-700 underline"
+				>
+					Verwyder foto
+				</button>
+			{/if}
+			{#each [...(uploadPhoto.fields.allIssues() ?? []).map((i) => i.message), photoError].filter(Boolean) as message (message)}
+				<p class="text-sm text-red-700">{message}</p>
+			{/each}
+			<form {...uploadPhoto} bind:this={photoForm} enctype="multipart/form-data" class="hidden">
+				<input {...uploadPhoto.fields.photo.as('file')} bind:this={photoInput} />
+			</form>
+		</div>
+	</section>
 
 	<section class="rounded-lg border border-stone-200 bg-white p-4">
 		<label class="flex items-center justify-between gap-4">

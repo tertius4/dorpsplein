@@ -5,6 +5,7 @@ import type { InterestsInput, QualificationInput } from '#lib/schemas/profile.ts
 import { auth } from '../auth.ts';
 import { DB, type JobType } from '../db/index.ts';
 import { JOB_TYPE_LABELS } from './kinds/job.ts';
+import { photoUrl } from './photos.ts';
 
 export const MAX_QUALIFICATIONS = 20;
 
@@ -42,6 +43,8 @@ export async function getMyProfile(userId: string) {
 		id: userId,
 		name: user?.name ?? '',
 		email: user?.email ?? '',
+		photo: photoUrl(profile?.photoKey, user?.image),
+		hasOwnPhoto: Boolean(profile?.photoKey),
 		headline: profile?.headline ?? '',
 		bio: profile?.bio ?? '',
 		phone: formatPhone(profile?.phone),

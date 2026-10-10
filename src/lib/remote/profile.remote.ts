@@ -1,12 +1,15 @@
 import { command, form, query } from '$app/server';
+import { invalid, isHttpError } from '@sveltejs/kit';
 import { getCurrentUser } from '#lib/remote/auth.remote.ts';
 import { requireUser } from '#lib/server/guards.ts';
+import * as photos from '#lib/server/services/photos.ts';
 import * as profile from '#lib/server/services/profile.ts';
 import {
 	aboutSchema,
 	availabilitySchema,
 	interestsSchema,
 	jobPreferencesSchema,
+	photoSchema,
 	publicProfileSchema,
 	qualificationIdSchema,
 	qualificationSchema
@@ -66,5 +69,25 @@ export const addQualification = form(qualificationSchema, async (input) => {
 export const removeQualification = command(qualificationIdSchema, async (id) => {
 	const user = requireUser();
 	await profile.removeQualification(user.id, id);
+	await getMyProfile().refresh();
+});
+
+export const uploadPhoto = form(photoSchema, async ({ photo }) => {
+	const user = requireUser();
+	try {
+		await photos.uploadProfilePhoto(user.id, photo);
+	} catch (e) {
+		// 'n 400 van die service (te groot, verkeerde tipe) word 'n boodskap by die vorm,
+		// nie 'n foutbladsy nie.
+		if (isHttpError(e) && e.status === 400) invalid(e.body.message);
+		throw e;
+	}
+	await getMyProfile().refresh();
+	return { saved: true };
+});
+
+export const removePhoto = command(async () => {
+	const user = requireUser();
+	await photos.removeProfilePhoto(user.id);
 	await getMyProfile().refresh();
 });

@@ -55,6 +55,10 @@ export const qualificationSchema = z.object({
 		.optional()
 });
 
+export const photoSchema = z.object({
+	photo: z.instanceof(File, { error: 'Kies ’n foto' })
+});
+
 export const qualificationIdSchema = z.string().min(1).max(40);
 
 export type InterestsInput = z.output<typeof interestsSchema>;

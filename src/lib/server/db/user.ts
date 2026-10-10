@@ -17,6 +17,7 @@ export const user = {
 				profile: {
 					select: {
 						headline: true,
+						photoKey: true,
 						bio: true,
 						available: true,
 						publicProfile: true,

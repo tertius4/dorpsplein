@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { DB, type JobType } from '../db/index.ts';
 import { JOB_TYPE_LABELS } from './kinds/job.ts';
+import { photoUrl } from './photos.ts';
 
 /** "Jan Botha" → "Jan B." vir besoekers wat nie aangemeld is nie. */
 export function displayName(name: string, isMember: boolean) {
@@ -50,7 +51,7 @@ export async function getPublicProfile(userId: string, viewerId: string | null) 
 	return {
 		id: user.id,
 		name: displayName(user.name, isMember),
-		image: user.image,
+		image: photoUrl(profile.photoKey, user.image),
 		isOwn: viewerId === user.id,
 		isPublic: profile.publicProfile,
 		memberSince: `${MONTHS[user.createdAt.getMonth()]} ${user.createdAt.getFullYear()}`,
