@@ -117,6 +117,7 @@ model Profile {
   photoKey       String?                     // R2-sleutel; val terug op User.image
   phone          String?   @db.VarChar(20)   // net gedeel ná ACCEPTED
   available      Boolean   @default(true)    // af = geen nuwe-plasing-kennisgewings
+  publicProfile  Boolean   @default(true)    // af = net aangemelde lede sien /mense/[id]
   isAdmin        Boolean   @default(false)
   blocked        Boolean   @default(false)
   popiaConsentAt DateTime?                   // null = /begin nog nie voltooi

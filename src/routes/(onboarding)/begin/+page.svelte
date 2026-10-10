@@ -100,7 +100,9 @@
 				<input {...f.popiaConsent.as('checkbox')} class="mt-1" />
 				<span class="text-sm text-stone-700">
 					Ek stem in dat Dorpsplein my inligting verwerk soos beskryf in die
-					<a href="/privaatheid" class="underline">privaatheidsbeleid</a>.
+					<a href="/privaatheid" class="underline">privaatheidsbeleid</a>, en dat my profiel (naam,
+					foto, opskrif, ervaring en kwalifikasies) publiek sigbaar is. My e-pos en selnommer is
+					nooit publiek nie, en ek kan my profiel later privaat maak.
 				</span>
 			</label>
 			{#each f.popiaConsent.issues() ?? [] as issue (issue.message)}

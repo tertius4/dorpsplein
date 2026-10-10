@@ -1,7 +1,10 @@
 <script lang="ts">
 	import {
+		addQualification,
 		getMyProfile,
+		removeQualification,
 		setAvailable,
+		setPublicProfile,
 		updateAbout,
 		updateInterests,
 		updateJobPreferences
@@ -11,6 +14,11 @@
 	const about = updateAbout.fields;
 	const interests = updateInterests.fields;
 	const work = updateJobPreferences.fields;
+	const qualification = addQualification.fields;
+
+	async function remove(id: string, name: string) {
+		if (confirm(`Verwyder “${name}”?`)) await removeQualification(id);
+	}
 </script>
 
 <svelte:head>
@@ -33,6 +41,26 @@
 				class="h-5 w-5"
 			/>
 		</label>
+	</section>
+
+	<section class="rounded-lg border border-stone-200 bg-white p-4">
+		<label class="flex items-center justify-between gap-4">
+			<span>
+				<span class="font-medium text-stone-900">Wys my profiel publiek</span>
+				<span class="block text-sm text-stone-600">
+					Af = net aangemelde Dorpsplein-lede kan dit sien. Jou e-pos en selnommer is nooit sigbaar
+					nie.
+				</span>
+			</span>
+			<input
+				type="checkbox"
+				checked={me.publicProfile}
+				onchange={(e) => setPublicProfile(e.currentTarget.checked)}
+				class="h-5 w-5"
+			/>
+		</label>
+		<a href="/mense/{me.id}" class="mt-3 inline-block text-sm underline">Sien my publieke profiel</a
+		>
 	</section>
 
 	<section>
@@ -190,5 +218,91 @@
 				Stoor
 			</button>
 		</form>
+	</section>
+	<section>
+		<h2 class="text-lg font-semibold text-stone-800">Kwalifikasies</h2>
+		{#if me.qualifications.length > 0}
+			<ul class="mt-4 space-y-2">
+				{#each me.qualifications as q (q.id)}
+					<li
+						class="flex items-center justify-between gap-3 rounded-md border border-stone-200 bg-white px-3 py-2"
+					>
+						<span>
+							<span class="text-stone-900">{q.name}</span>
+							{#if q.issuer || q.year}
+								<span class="block text-sm text-stone-500">
+									{[q.issuer, q.year].filter(Boolean).join(', ')}
+								</span>
+							{/if}
+						</span>
+						<button
+							type="button"
+							onclick={() => remove(q.id, q.name)}
+							class="text-sm text-red-700 underline"
+						>
+							Verwyder
+						</button>
+					</li>
+				{/each}
+			</ul>
+		{:else}
+			<p class="mt-2 text-sm text-stone-600">Nog geen kwalifikasies nie.</p>
+		{/if}
+
+		{#if me.canAddQualification}
+			<form {...addQualification} class="mt-4 space-y-3 rounded-md bg-stone-100 p-3">
+				<label class="block">
+					<span class="text-sm font-medium text-stone-700">Kwalifikasie</span>
+					<input
+						{...qualification.name.as('text')}
+						placeholder="bv. Elektrisiën – Trade Test"
+						maxlength="120"
+						required
+						class="mt-1 block w-full rounded-md border-stone-300"
+					/>
+					{#each qualification.name.issues() ?? [] as issue (issue.message)}
+						<span class="block text-sm text-red-700">{issue.message}</span>
+					{/each}
+				</label>
+				<div class="grid grid-cols-3 gap-3">
+					<label class="col-span-2 block">
+						<span class="text-sm font-medium text-stone-700">Uitgereik deur</span>
+						<input
+							{...qualification.issuer.as('text')}
+							placeholder="bv. SAQA"
+							maxlength="120"
+							class="mt-1 block w-full rounded-md border-stone-300"
+						/>
+						{#each qualification.issuer.issues() ?? [] as issue (issue.message)}
+							<span class="block text-sm text-red-700">{issue.message}</span>
+						{/each}
+					</label>
+					<label class="block">
+						<span class="text-sm font-medium text-stone-700">Jaar</span>
+						<input
+							{...qualification.year.as('text')}
+							inputmode="numeric"
+							maxlength="4"
+							placeholder="2019"
+							class="mt-1 block w-full rounded-md border-stone-300"
+						/>
+						{#each qualification.year.issues() ?? [] as issue (issue.message)}
+							<span class="block text-sm text-red-700">{issue.message}</span>
+						{/each}
+					</label>
+				</div>
+				{#each qualification.issues() ?? [] as issue (issue.message)}
+					<p class="text-sm text-red-700">{issue.message}</p>
+				{/each}
+				<button
+					disabled={addQualification.pending > 0}
+					class="rounded-md bg-stone-900 px-4 py-2 font-medium text-white disabled:opacity-50"
+				>
+					Voeg by
+				</button>
+			</form>
+		{:else}
+			<p class="mt-4 text-sm text-stone-600">Jy het die maksimum aantal kwalifikasies bereik.</p>
+		{/if}
 	</section>
 </main>

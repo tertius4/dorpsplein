@@ -39,5 +39,23 @@ export const jobPreferencesSchema = z.object({
 });
 
 export const availabilitySchema = z.boolean();
+export const publicProfileSchema = z.boolean();
+
+export const qualificationSchema = z.object({
+	name: z.string().trim().min(2, 'Vul die kwalifikasie in').max(120, 'Hoogstens 120 karakters'),
+	issuer: z.string().trim().max(120, 'Hoogstens 120 karakters').optional(),
+	year: z
+		.string()
+		.trim()
+		.regex(/^(\d{4})?$/, 'Gebruik ’n jaartal, bv. 2019')
+		.refine(
+			(v) => !v || (Number(v) >= 1950 && Number(v) <= new Date().getFullYear()),
+			'Tussen 1950 en vanjaar'
+		)
+		.optional()
+});
+
+export const qualificationIdSchema = z.string().min(1).max(40);
 
 export type InterestsInput = z.output<typeof interestsSchema>;
+export type QualificationInput = z.output<typeof qualificationSchema>;

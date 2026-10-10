@@ -1,10 +1,12 @@
 import { getRequestEvent } from '$app/server';
 import { error } from '@sveltejs/kit';
 import { JOB_TYPES } from '#lib/schemas/fields.ts';
-import type { InterestsInput } from '#lib/schemas/profile.ts';
+import type { InterestsInput, QualificationInput } from '#lib/schemas/profile.ts';
 import { auth } from '../auth.ts';
 import { DB, type JobType } from '../db/index.ts';
 import { JOB_TYPE_LABELS } from './kinds/job.ts';
+
+export const MAX_QUALIFICATIONS = 20;
 
 /** "+27821234567" → "082 123 4567" vir vertoning. */
 export function formatPhone(phone: string | null | undefined) {
@@ -24,24 +26,27 @@ export async function getMyProfile(userId: string) {
 	const { user } = getRequestEvent().locals;
 
 	// Onafhanklike navrae tegelyk: een rondte na Neon in plaas van vyf.
-	const [profile, interests, jobTypePrefs, worker, categories] = await Promise.all([
+	const [profile, interests, jobTypePrefs, worker, categories, qualifications] = await Promise.all([
 		DB.profile.findByUserId(userId),
 		DB.interest.findByUser(userId),
 		DB.jobTypePreference.findByUser(userId),
 		DB.workerProfile.findByUser(userId),
-		DB.category.findActive('JOB')
+		DB.category.findActive('JOB'),
+		DB.qualification.findByUser(userId)
 	]);
 
 	const years = new Map(interests.map((i) => [i.categoryId, i.yearsExperience]));
 	const wanted = new Set<JobType>(jobTypePrefs.map((p) => p.jobType));
 
 	return {
+		id: userId,
 		name: user?.name ?? '',
 		email: user?.email ?? '',
 		headline: profile?.headline ?? '',
 		bio: profile?.bio ?? '',
 		phone: formatPhone(profile?.phone),
 		available: profile?.available ?? true,
+		publicProfile: profile?.publicProfile ?? true,
 		interests: categories.map((c) => ({
 			categoryId: String(c.id),
 			name: c.name,
@@ -55,7 +60,14 @@ export async function getMyProfile(userId: string) {
 			selected: wanted.has(value)
 		})),
 		driversLicence: worker?.driversLicence ?? false,
-		ownTransport: worker?.ownTransport ?? false
+		ownTransport: worker?.ownTransport ?? false,
+		qualifications: qualifications.map(({ id, name, issuer, year }) => ({
+			id,
+			name,
+			issuer,
+			year
+		})),
+		canAddQualification: qualifications.length < MAX_QUALIFICATIONS
 	};
 }
 
@@ -97,4 +109,26 @@ export async function updateJobPreferences(
 
 export async function setAvailable(userId: string, available: boolean) {
 	await DB.profile.update(userId, { available });
+}
+
+export async function setPublicProfile(userId: string, publicProfile: boolean) {
+	await DB.profile.update(userId, { publicProfile });
+}
+
+export async function addQualification(userId: string, input: QualificationInput) {
+	const isAdded = await DB.qualification.countByUser(userId);
+	if (isAdded >= MAX_QUALIFICATIONS) {
+		error(400, `Jy kan hoogstens ${MAX_QUALIFICATIONS} kwalifikasies hê`);
+	}
+	await DB.qualification.create(userId, {
+		name: input.name,
+		issuer: input.issuer || null,
+		year: input.year ? Number(input.year) : null
+	});
+}
+
+export async function removeQualification(userId: string, id: string) {
+	// 404, nie 403 nie: ons verklap nie dat 'n ander persoon se ID bestaan nie.
+	const isDeleted = await DB.qualification.deleteOwned(id, userId);
+	if (!isDeleted) error(404, 'Kwalifikasie nie gevind nie');
 }

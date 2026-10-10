@@ -4,7 +4,9 @@ import type { Transaction } from './create.ts';
 import { interest } from './interest.ts';
 import { jobTypePreference } from './job-type-preferences.ts';
 import { profile } from './profile.ts';
+import { qualification } from './qualification.ts';
 import { rateLimit } from './rate-limit.ts';
+import { user } from './user.ts';
 import { workerProfile } from './worker-profile.ts';
 
 export const DB = {
@@ -12,7 +14,9 @@ export const DB = {
 	interest,
 	jobTypePreference,
 	profile,
+	qualification,
 	rateLimit,
+	user,
 	workerProfile,
 
 	$transaction: <T>(fn: (tx: Transaction) => Promise<T>) => prisma().$transaction(fn)

@@ -6,7 +6,10 @@ import {
 	aboutSchema,
 	availabilitySchema,
 	interestsSchema,
-	jobPreferencesSchema
+	jobPreferencesSchema,
+	publicProfileSchema,
+	qualificationIdSchema,
+	qualificationSchema
 } from '#lib/schemas/profile.ts';
 
 export const getMyProfile = query(async () => {
@@ -44,5 +47,24 @@ export const updateJobPreferences = form(jobPreferencesSchema, async (input) => 
 export const setAvailable = command(availabilitySchema, async (available) => {
 	const user = requireUser();
 	await profile.setAvailable(user.id, available);
+	await getMyProfile().refresh();
+});
+
+export const setPublicProfile = command(publicProfileSchema, async (publicProfile) => {
+	const user = requireUser();
+	await profile.setPublicProfile(user.id, publicProfile);
+	await getMyProfile().refresh();
+});
+
+export const addQualification = form(qualificationSchema, async (input) => {
+	const user = requireUser();
+	await profile.addQualification(user.id, input);
+	await getMyProfile().refresh();
+	return { saved: true };
+});
+
+export const removeQualification = command(qualificationIdSchema, async (id) => {
+	const user = requireUser();
+	await profile.removeQualification(user.id, id);
 	await getMyProfile().refresh();
 });
