@@ -59,7 +59,7 @@
 <main class="mx-auto max-w-lg space-y-10 px-4 py-12">
 	<h1 class="text-2xl font-bold text-stone-900">My profiel</h1>
 
-	<section class="flex items-center gap-4">
+	<section id="foto" class="flex scroll-mt-20 items-center gap-4">
 		<Avatar name={me.name} image={me.photo} size={80} />
 		<div class="space-y-2">
 			<label
@@ -101,7 +101,7 @@
 			<input
 				type="checkbox"
 				checked={me.available}
-				onchange={(e) => setAvailable(e.currentTarget.checked)}
+				onchange={(e) => setAvailable(e.currentTarget.checked).updates(getMyProfile())}
 				class="h-5 w-5"
 			/>
 		</label>
@@ -127,7 +127,7 @@
 		>
 	</section>
 
-	<section>
+	<section id="oor-my" class="scroll-mt-20">
 		<h2 class="text-lg font-semibold text-stone-800">Oor my</h2>
 		<form {...updateAbout} class="mt-4 space-y-4">
 			<label class="block">
@@ -202,7 +202,7 @@
 		</form>
 	</section>
 
-	<section>
+	<section id="belangstellings" class="scroll-mt-20">
 		<h2 class="text-lg font-semibold text-stone-800">Waaroor wil jy hoor?</h2>
 		<p class="mt-1 text-sm text-stone-600">Kies kategorieë, en hoeveel jaar ervaring jy het.</p>
 		<form {...updateInterests} class="mt-4 space-y-2">
@@ -283,7 +283,7 @@
 			</button>
 		</form>
 	</section>
-	<section>
+	<section id="kwalifikasies" class="scroll-mt-20">
 		<h2 class="text-lg font-semibold text-stone-800">Kwalifikasies</h2>
 		{#if me.qualifications.length > 0}
 			<ul class="mt-4 space-y-2">

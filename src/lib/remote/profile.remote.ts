@@ -1,6 +1,7 @@
-import { command, form, query } from '$app/server';
+import { command, form, query, requested } from '$app/server';
 import { invalid, isHttpError } from '@sveltejs/kit';
 import { getCurrentUser } from '#lib/remote/auth.remote.ts';
+import { getHome } from '#lib/remote/home.remote.ts';
 import { requireUser } from '#lib/server/guards.ts';
 import * as photos from '#lib/server/services/photos.ts';
 import * as profile from '#lib/server/services/profile.ts';
@@ -29,7 +30,7 @@ export const updateAbout = form(aboutSchema, async (input) => {
 	await getMyProfile().refresh();
 	// `locals.user` in hierdie versoek het nog die ou naam, dus refresh() sou die
 	// ou waarde teruggee. Ons stuur eerder self die nuwe waarde vir die kopstrook saam.
-	getCurrentUser().set({ id: user.id, name: input.name });
+	getCurrentUser().set({ id: user.id, name: input.name, image: user.image ?? null });
 	return { saved: true };
 });
 
@@ -50,7 +51,10 @@ export const updateJobPreferences = form(jobPreferencesSchema, async (input) => 
 export const setAvailable = command(availabilitySchema, async (available) => {
 	const user = requireUser();
 	await profile.setAvailable(user.id, available);
-	await getMyProfile().refresh();
+	// Die skakelaar is op /profiel en /tuis. Ververs net die query wat die bladsy gevra het
+	// (via `.updates(...)` op die kliënt), sodat niks onnodig bereken word nie.
+	await requested(getMyProfile, 1).refreshAll();
+	await requested(getHome, 1).refreshAll();
 });
 
 export const setPublicProfile = command(publicProfileSchema, async (publicProfile) => {
@@ -74,8 +78,9 @@ export const removeQualification = command(qualificationIdSchema, async (id) => 
 
 export const uploadPhoto = form(photoSchema, async ({ photo }) => {
 	const user = requireUser();
+	let image: string;
 	try {
-		await photos.uploadProfilePhoto(user.id, photo);
+		image = await photos.uploadProfilePhoto(user.id, photo);
 	} catch (e) {
 		// 'n 400 van die service (te groot, verkeerde tipe) word 'n boodskap by die vorm,
 		// nie 'n foutbladsy nie.
@@ -83,6 +88,7 @@ export const uploadPhoto = form(photoSchema, async ({ photo }) => {
 		throw e;
 	}
 	await getMyProfile().refresh();
+	getCurrentUser().set({ id: user.id, name: user.name, image });
 	return { saved: true };
 });
 
@@ -90,4 +96,5 @@ export const removePhoto = command(async () => {
 	const user = requireUser();
 	await photos.removeProfilePhoto(user.id);
 	await getMyProfile().refresh();
+	getCurrentUser().set({ id: user.id, name: user.name, image: null });
 });

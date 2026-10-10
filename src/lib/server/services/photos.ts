@@ -1,4 +1,6 @@
+import { getRequestEvent } from '$app/server';
 import { error } from '@sveltejs/kit';
+import { auth } from '../auth.ts';
 import { DB } from '../db/index.ts';
 import { photoBucket } from '../storage.ts';
 import { runInBackground } from '../background.ts';
@@ -33,7 +35,17 @@ export function photoUrl(photoKey: string | null | undefined, fallback: string |
 	return fallback ?? null;
 }
 
-export async function uploadProfilePhoto(userId: string, file: File) {
+/**
+ * Sit die foto-URL ook op Better Auth se `User.image`. Dan is dit deel van die sessie
+ * (cookieCache) en kan die kopstrook dit wys sonder 'n DB-navraag per bladsy.
+ * Prys: 'n Google-foto wat hierdeur oorskryf is, kom nie terug ná "Verwyder" nie.
+ */
+async function syncSessionImage(image: string | null) {
+	await auth().api.updateUser({ body: { image }, headers: getRequestEvent().request.headers });
+}
+
+/** Laai 'n profielfoto op en gee die nuwe URL terug. */
+export async function uploadProfilePhoto(userId: string, file: File): Promise<string> {
 	if (file.size === 0) error(400, 'Die lêer is leeg');
 	if (file.size > MAX_PHOTO_BYTES) error(400, 'Die foto is te groot (hoogstens 1 MB)');
 
@@ -46,14 +58,18 @@ export async function uploadProfilePhoto(userId: string, file: File) {
 
 	const previous = (await DB.profile.findByUserId(userId))?.photoKey;
 	await DB.profile.update(userId, { photoKey: key });
+	const url = photoUrl(key, null)!;
+	await syncSessionImage(url);
 
 	// Eers ná die databasis die nuwe sleutel ken, word die ou foto uitgevee.
 	if (previous) runInBackground(photoBucket().delete(previous));
+	return url;
 }
 
 export async function removeProfilePhoto(userId: string) {
 	const previous = (await DB.profile.findByUserId(userId))?.photoKey;
 	if (!previous) return;
 	await DB.profile.update(userId, { photoKey: null });
+	await syncSessionImage(null);
 	runInBackground(photoBucket().delete(previous));
 }

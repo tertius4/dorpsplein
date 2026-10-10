@@ -16,7 +16,7 @@ import { forgetOnboarded } from '#lib/server/services/onboarding.ts';
 /** Only return what the UI needs. */
 export const getCurrentUser = query(async () => {
 	const { user } = getRequestEvent().locals;
-	return user ? { id: user.id, name: user.name } : null;
+	return user ? { id: user.id, name: user.name, image: user.image ?? null } : null;
 });
 
 export const signUp = form(signUpSchema, async ({ name, email, _password }) => {
