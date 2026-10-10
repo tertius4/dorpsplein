@@ -66,7 +66,13 @@
 				class="inline-block cursor-pointer rounded-md border border-stone-300 bg-white px-3 py-1.5 text-sm font-medium text-stone-800"
 			>
 				{isResizing || uploadPhoto.pending > 0 ? 'Besig…' : 'Kies ’n foto'}
-				<input type="file" accept="image/*" class="sr-only" onchange={choosePhoto} />
+				<input
+					type="file"
+					accept="image/*"
+					class="sr-only"
+					onchange={choosePhoto}
+					disabled={uploadPhoto.pending > 0}
+				/>
 			</label>
 			{#if me.hasOwnPhoto}
 				<button
