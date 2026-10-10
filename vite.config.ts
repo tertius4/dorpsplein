@@ -3,7 +3,10 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 import adapter from '@sveltejs/adapter-cloudflare';
 import { sveltekit } from '@sveltejs/kit/vite';
+import net from 'node:net';
 
+// This is here for locally logging in with google - used to timeout.
+net.setDefaultAutoSelectFamilyAttemptTimeout(1000);
 export default defineConfig({
 	plugins: [
 		prismaWasm(),

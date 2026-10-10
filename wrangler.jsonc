@@ -8,15 +8,41 @@
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"
 	},
-	"observability": { "enabled": true },
+	"observability": {
+		"enabled": true
+	},
 	"workers_dev": false,
 	"preview_urls": false,
-	"routes": [{ "pattern": "dorpsplein.co.za", "custom_domain": true }],
-	"vars": { "APP_ENV": "production" },
+	"routes": [
+		{
+			"pattern": "dorpsplein.co.za",
+			"custom_domain": true
+		}
+	],
+	// Profielfoto's. Plaaslik (npm run dev / preview) boots Wrangler R2 na in .wrangler/state.
+	"r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "dorpsplein-fotos" }],
+	"vars": {
+		"APP_ENV": "production",
+		"BETTER_AUTH_URL": "https://dorpsplein.co.za",
+		"EMAIL_FROM": "Dorpsplein <geen-antwoord@pos.dorpsplein.co.za>",
+		"GOOGLE_CLIENT_ID": "275952773561-l9thqm53v8bv0lv5se9m8cs1hj3l4muk.apps.googleusercontent.com"
+	},
 	"env": {
 		"dev": {
-			"routes": [{ "pattern": "dev.dorpsplein.co.za", "custom_domain": true }],
-			"vars": { "APP_ENV": "dev" }
+			"routes": [
+				{
+					"pattern": "dev.dorpsplein.co.za",
+					"custom_domain": true
+				}
+			],
+			// r2_buckets erf nie van die hoofvlak nie
+			"r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "dorpsplein-fotos-dev" }],
+			"vars": {
+				"APP_ENV": "dev",
+				"BETTER_AUTH_URL": "https://dev.dorpsplein.co.za",
+				"EMAIL_FROM": "Dorpsplein <geen-antwoord@pos.dorpsplein.co.za>",
+				"GOOGLE_CLIENT_ID": "275952773561-g401qbusnhq3vpnaqgunj871bi00jflu.apps.googleusercontent.com"
+			}
 		}
 	}
 }
