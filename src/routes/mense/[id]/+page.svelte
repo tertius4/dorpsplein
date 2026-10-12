@@ -37,9 +37,7 @@
 		</div>
 	</header>
 
-	{#if !person.isWorker}
-		<!-- 'n Plaser soek nie werk nie: geen beskikbaarheid om te wys nie. -->
-	{:else if person.available}
+	{#if person.isWorker && person.available}
 		<section role="status" class="mt-6 rounded-lg border border-green-300 bg-green-50 px-4 py-3">
 			<p class="flex items-center gap-2 font-semibold text-green-900">
 				<span class="h-2.5 w-2.5 rounded-full bg-green-600" aria-hidden="true"></span>
@@ -47,13 +45,6 @@
 			</p>
 			{#if person.jobTypes.length > 0}
 				<p class="mt-1 text-sm text-green-900">Soek: {person.jobTypes.join(' · ')}</p>
-			{/if}
-		</section>
-	{:else}
-		<section role="status" class="mt-6 rounded-lg border border-stone-200 bg-stone-100 px-4 py-3">
-			<p class="font-semibold text-stone-700">Tans nie beskikbaar vir werk nie</p>
-			{#if person.jobTypes.length > 0}
-				<p class="mt-1 text-sm text-stone-600">Doen gewoonlik: {person.jobTypes.join(' · ')}</p>
 			{/if}
 		</section>
 	{/if}
