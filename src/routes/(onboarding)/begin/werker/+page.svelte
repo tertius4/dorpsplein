@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { getCurrentUser } from '#lib/remote/auth.remote.ts';
-	import { completeOnboarding, getOnboardingOptions } from '#lib/remote/onboarding.remote.ts';
+	import { completeWorkerOnboarding, getOnboardingOptions } from '#lib/remote/onboarding.remote.ts';
 
 	const user = $derived(await getCurrentUser());
 	const options = $derived(await getOnboardingOptions());
-	const f = completeOnboarding.fields;
+	const f = completeWorkerOnboarding.fields;
 </script>
 
 <svelte:head>
@@ -12,10 +12,11 @@
 </svelte:head>
 
 <main class="mx-auto max-w-lg px-4 py-12">
-	<h1 class="text-2xl font-bold text-stone-900">Welkom, {user?.name}!</h1>
+	<a href="/begin" class="text-sm text-stone-600 underline">← Terug</a>
+	<h1 class="mt-2 text-2xl font-bold text-stone-900">Welkom, {user?.name}!</h1>
 	<p class="mt-2 text-stone-600">Net ’n paar vrae, dan kan jy begin.</p>
 
-	<form {...completeOnboarding} class="mt-8 space-y-8">
+	<form {...completeWorkerOnboarding} class="mt-8 space-y-8">
 		<fieldset class="space-y-4">
 			<legend class="text-lg font-semibold text-stone-800">1. Jou kontakbesonderhede</legend>
 			<label class="block">
@@ -104,7 +105,7 @@
 		{/each}
 
 		<button
-			disabled={completeOnboarding.pending > 0}
+			disabled={completeWorkerOnboarding.pending > 0}
 			class="w-full rounded-md bg-stone-900 px-4 py-2 font-medium text-white disabled:opacity-50"
 		>
 			Begin

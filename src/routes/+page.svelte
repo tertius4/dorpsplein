@@ -41,14 +41,26 @@
 		mense in die dorp bymekaar.
 	</p>
 
-	<div class="mt-6 flex gap-3">
-		<a href="/registreer" class="rounded-md bg-stone-900 px-4 py-2 font-medium text-white">
-			Registreer gratis
+	<div class="mt-6 grid gap-3 sm:grid-cols-2">
+		<a
+			href="/registreer?as=werker"
+			class="rounded-lg bg-stone-900 px-4 py-3 text-white hover:bg-stone-800"
+		>
+			<span class="block font-semibold">Ek soek werk</span>
+			<span class="block text-sm text-stone-300">Sê wat jy doen, dan hoor jy wat pas.</span>
 		</a>
-		<a href="/teken-in" class="rounded-md border border-stone-300 bg-white px-4 py-2 font-medium">
-			Teken in
+		<a
+			href="/registreer?as=plaser"
+			class="rounded-lg border border-stone-300 bg-white px-4 py-3 hover:border-stone-500"
+		>
+			<span class="block font-semibold text-stone-900">Ek soek mense</span>
+			<span class="block text-sm text-stone-600">Plaas werk en kry mense wat pas.</span>
 		</a>
 	</div>
+	<p class="mt-4 text-sm text-stone-600">
+		Het jy reeds ’n rekening?
+		<a href="/teken-in" class="underline">Teken in</a>
+	</p>
 
 	<section class="mt-12">
 		<h2 class="text-xl font-semibold text-stone-800">Hoe dit werk</h2>

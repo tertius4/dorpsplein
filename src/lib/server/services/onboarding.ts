@@ -1,11 +1,12 @@
-import type { OnboardingInput } from '#lib/schemas/onboarding.ts';
+import type { PosterOnboardingInput, WorkerOnboardingInput } from '#lib/schemas/onboarding.ts';
 import { getRequestEvent } from '$app/server';
 import { DB } from '../db/index.ts';
+import { clearIntent } from '../intent.ts';
 import { assertActiveJobCategories } from './profile.ts';
 
 const ONBOARDED_COOKIE = 'dp_onboarded';
 
-export async function completeOnboarding(userId: string, input: OnboardingInput) {
+export async function completeWorkerOnboarding(userId: string, input: WorkerOnboardingInput) {
 	await assertActiveJobCategories(input.categoryIds);
 
 	await DB.$transaction(async (tx) => {
@@ -16,6 +17,20 @@ export async function completeOnboarding(userId: string, input: OnboardingInput)
 		);
 		await DB.interest.replaceForUser(userId, input.categoryIds, tx);
 		await DB.jobTypePreference.replaceForUser(userId, input.jobTypes, tx);
+	});
+
+	markOnboarded(userId);
+}
+
+/**
+ * 'n Plaser kry geen werk-kennisgewings nie, dus is `available` af. Hy kan later by /profiel
+ * belangstellings byvoeg, en moet dan self weer "beskikbaar" aanskakel.
+ */
+export async function completePosterOnboarding(userId: string, input: PosterOnboardingInput) {
+	await DB.profile.upsert(userId, {
+		phone: input.phone,
+		available: false,
+		popiaConsentAt: new Date()
 	});
 
 	markOnboarded(userId);
@@ -36,6 +51,7 @@ export async function isOnboarded(userId: string): Promise<boolean> {
 }
 
 export function markOnboarded(userId: string) {
+	clearIntent();
 	getRequestEvent().cookies.set(ONBOARDED_COOKIE, userId, {
 		path: '/',
 		httpOnly: true,

@@ -57,6 +57,7 @@ export async function getPublicProfile(userId: string, viewerId: string | null) 
 		memberSince: `${MONTHS[user.createdAt.getMonth()]} ${user.createdAt.getFullYear()}`,
 		headline: profile.headline,
 		bio: profile.bio,
+		isWorker: user.interests.length > 0,
 		available: profile.available,
 		interests: user.interests.map((i) => ({
 			name: i.category.name,

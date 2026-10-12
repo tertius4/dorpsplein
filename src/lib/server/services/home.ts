@@ -43,6 +43,8 @@ export async function getHomeOverview(
 		name: user.name,
 		firstName: user.name.trim().split(/\s+/)[0],
 		image: photoUrl(profile?.photoKey, user.image),
+		// Net mense met belangstellings is "werkers": plasers sien nie die werk-kaart en -lys nie.
+		isWorker: interests.length > 0,
 		available: profile?.available ?? true,
 		publicProfile: profile?.publicProfile ?? true,
 		profileUrl: `${BETTER_AUTH_URL}/mense/${userId}`,

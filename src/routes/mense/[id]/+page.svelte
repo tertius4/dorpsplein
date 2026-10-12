@@ -23,7 +23,7 @@
 	<header class="flex items-center gap-4">
 		<div class="relative shrink-0">
 			<Avatar name={person.name} image={person.image} size={72} />
-			{#if person.available}
+			{#if person.isWorker && person.available}
 				<span
 					title="Oop vir werk"
 					class="absolute right-0 bottom-0 h-5 w-5 rounded-full border-2 border-white bg-green-600"
@@ -37,7 +37,9 @@
 		</div>
 	</header>
 
-	{#if person.available}
+	{#if !person.isWorker}
+		<!-- 'n Plaser soek nie werk nie: geen beskikbaarheid om te wys nie. -->
+	{:else if person.available}
 		<section role="status" class="mt-6 rounded-lg border border-green-300 bg-green-50 px-4 py-3">
 			<p class="flex items-center gap-2 font-semibold text-green-900">
 				<span class="h-2.5 w-2.5 rounded-full bg-green-600" aria-hidden="true"></span>

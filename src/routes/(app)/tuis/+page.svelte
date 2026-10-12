@@ -23,37 +23,51 @@
 		<h1 class="text-2xl font-bold text-stone-900">Goeiedag, {home.firstName}!</h1>
 	</header>
 
-	<section
-		class="rounded-lg border px-4 py-3 {home.available
-			? 'border-green-300 bg-green-50'
-			: 'border-stone-200 bg-stone-100'}"
-	>
-		<label class="flex items-center justify-between gap-4">
-			<span>
-				<span
-					class="flex items-center gap-2 font-semibold {home.available
-						? 'text-green-900'
-						: 'text-stone-700'}"
-				>
-					{#if home.available}<span class="h-2.5 w-2.5 rounded-full bg-green-600"></span>{/if}
-					{home.available ? 'Oop vir werk' : 'Tans nie beskikbaar nie'}
+	{#if home.isWorker}
+		<section
+			class="rounded-lg border px-4 py-3 {home.available
+				? 'border-green-300 bg-green-50'
+				: 'border-stone-200 bg-stone-100'}"
+		>
+			<label class="flex items-center justify-between gap-4">
+				<span>
+					<span
+						class="flex items-center gap-2 font-semibold {home.available
+							? 'text-green-900'
+							: 'text-stone-700'}"
+					>
+						{#if home.available}<span class="h-2.5 w-2.5 rounded-full bg-green-600"></span>{/if}
+						{home.available ? 'Oop vir werk' : 'Tans nie beskikbaar nie'}
+					</span>
+					<span class="block text-sm text-stone-600">
+						{home.available
+							? 'Jy kry kennisgewings oor nuwe werk wat by jou pas.'
+							: 'Skakel aan om weer kennisgewings oor werk te kry.'}
+					</span>
 				</span>
-				<span class="block text-sm text-stone-600">
-					{home.available
-						? 'Jy kry kennisgewings oor nuwe werk wat by jou pas.'
-						: 'Skakel aan om weer kennisgewings oor werk te kry.'}
-				</span>
-			</span>
-			<input
-				type="checkbox"
-				checked={home.available}
-				onchange={(e) => setAvailable(e.currentTarget.checked).updates(getHome())}
-				class="h-5 w-5"
-			/>
-		</label>
-	</section>
+				<input
+					type="checkbox"
+					checked={home.available}
+					onchange={(e) => setAvailable(e.currentTarget.checked).updates(getHome())}
+					class="h-5 w-5"
+				/>
+			</label>
+		</section>
+	{:else}
+		<section class="rounded-lg border border-stone-200 bg-white p-4">
+			<h2 class="font-semibold text-stone-900">Wil jy ook werk kry?</h2>
+			<p class="text-sm text-stone-600">
+				Kies waaroor jy wil hoor, dan sê ons jou as iemand iets plaas wat pas.
+			</p>
+			<a
+				href="/profiel#belangstellings"
+				class="mt-3 inline-block rounded-md border border-stone-300 px-3 py-2 text-sm font-medium text-stone-800"
+				>Kies belangstellings</a
+			>
+		</section>
+	{/if}
 
-	{#if home.done < home.checklist.length}
+	{#if home.isWorker && home.done < home.checklist.length}
 		<section class="rounded-lg border border-stone-200 bg-white p-4">
 			<h2 class="font-semibold text-stone-900">Maak jou profiel sterker</h2>
 			<p class="text-sm text-stone-600">’n Volledige profiel help werkgewers om jou te kies.</p>
@@ -78,7 +92,7 @@
 		</section>
 	{/if}
 
-	{#if home.publicProfile}
+	{#if home.isWorker && home.publicProfile}
 		<section class="rounded-lg border border-stone-200 bg-white p-4">
 			<h2 class="font-semibold text-stone-900">Deel jou profiel</h2>
 			<p class="text-sm text-stone-600">Stuur die skakel aan iemand wat dalk werk vir jou het.</p>
