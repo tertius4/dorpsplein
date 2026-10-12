@@ -1,4 +1,7 @@
 <script lang="ts">
+	import Field from '#lib/components/Field.svelte';
+	import { inputClass } from '#lib/styles.ts';
+	import Button from '#lib/components/Button.svelte';
 	import { page } from '$app/state';
 	import { resetPassword } from '#lib/remote/auth.remote.ts';
 
@@ -18,48 +21,35 @@
 	{#if error || !token}
 		<p class="mt-4 text-stone-700">
 			Die skakel het verval of is ongeldig.
-			<a href="/wagwoord-vergeet" class="underline">Vra ’n nuwe een aan</a>.
+			<Button variant="link" href="/wagwoord-vergeet">Vra ’n nuwe een aan</Button>.
 		</p>
 	{:else}
 		<form {...resetPassword} class="mt-6 space-y-4">
 			<input {...resetPassword.fields.token.as('hidden', token)} />
 
-			<label class="block">
-				<span class="text-sm font-medium text-stone-700">Nuwe wagwoord</span>
-				<input
+			<Field label="Nuwe wagwoord" issues={resetPassword.fields._password.issues() ?? []}
+				><input
 					{...resetPassword.fields._password.as('password')}
 					autocomplete="new-password"
 					required
-					class="mt-1 block w-full rounded-md border-stone-300"
-				/>
-				{#each resetPassword.fields._password.issues() ?? [] as issue (issue.message)}
-					<span class="text-sm text-red-700">{issue.message}</span>
-				{/each}
-			</label>
+					class={inputClass}
+				/></Field
+			>
 
-			<label class="block">
-				<span class="text-sm font-medium text-stone-700">Herhaal wagwoord</span>
-				<input
+			<Field label="Herhaal wagwoord" issues={resetPassword.fields._confirm.issues() ?? []}
+				><input
 					{...resetPassword.fields._confirm.as('password')}
 					autocomplete="new-password"
 					required
-					class="mt-1 block w-full rounded-md border-stone-300"
-				/>
-				{#each resetPassword.fields._confirm.issues() ?? [] as issue (issue.message)}
-					<span class="text-sm text-red-700">{issue.message}</span>
-				{/each}
-			</label>
+					class={inputClass}
+				/></Field
+			>
 
 			{#each resetPassword.fields.issues() ?? [] as issue (issue.message)}
 				<p class="text-sm text-red-700">{issue.message}</p>
 			{/each}
 
-			<button
-				disabled={resetPassword.pending > 0}
-				class="w-full rounded-md bg-stone-900 px-4 py-2 font-medium text-white disabled:opacity-50"
-			>
-				Stoor wagwoord
-			</button>
+			<Button block type="submit" disabled={resetPassword.pending > 0}>Stoor wagwoord</Button>
 		</form>
 	{/if}
 </main>

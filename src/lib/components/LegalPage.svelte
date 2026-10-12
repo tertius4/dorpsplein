@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Alert from '#lib/components/Alert.svelte';
 	import type { Snippet } from 'svelte';
 
 	let { title, updated, children }: { title: string; updated: string; children: Snippet } =
@@ -10,9 +11,9 @@
 </svelte:head>
 
 <main class="mx-auto max-w-2xl px-4 py-12">
-	<p class="mb-6 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">
+	<Alert class="mb-6">
 		Konsep: hierdie teks moet nog deur iemand met regskennis nagegaan word.
-	</p>
+	</Alert>
 	<h1 class="text-3xl font-bold text-stone-900">{title}</h1>
 	<p class="mt-1 text-sm text-stone-500">Laas bygewerk: {updated}</p>
 	<div

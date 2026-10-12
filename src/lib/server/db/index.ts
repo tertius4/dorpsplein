@@ -6,6 +6,7 @@ import { jobTypePreference } from './job-type-preferences.ts';
 import { listing } from './listing.ts';
 import { processedRequest } from './processed-request.ts';
 import { profile } from './profile.ts';
+import { response } from './response.ts';
 import { qualification } from './qualification.ts';
 import { rateLimit } from './rate-limit.ts';
 import { user } from './user.ts';
@@ -19,6 +20,7 @@ export const DB = {
 	profile,
 	qualification,
 	rateLimit,
+	response,
 	user,
 
 	$transaction: <T>(fn: (tx: Transaction) => Promise<T>, client: Database = prisma()) =>

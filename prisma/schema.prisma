@@ -26,6 +26,14 @@ enum ListingStatus {
   CANCELLED
 }
 
+/// INTERESTED = reageerder wag; ACCEPTED/DECLINED besluit die plaser; WITHDRAWN besluit die reageerder.
+enum ResponseStatus {
+  INTERESTED
+  WITHDRAWN
+  ACCEPTED
+  DECLINED
+}
+
 model Category {
   id        Int         @id @default(autoincrement())
   kind      ListingKind
@@ -58,6 +66,7 @@ model User {
   jobTypePrefs      JobTypePreference[]
   qualifications    Qualification[]
   listings          Listing[]
+  responses         Response[]
   processedRequests ProcessedRequest[]
 }
 
@@ -201,7 +210,8 @@ model Listing {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  job JobDetails?
+  job       JobDetails?
+  responses Response[]
 
   @@index([status, kind, categoryId])
   @@index([status, createdAt])
@@ -210,11 +220,28 @@ model Listing {
 
 /// 1-tot-1 met `Listing` (kind = JOB).
 model JobDetails {
-  listingId              String  @id
-  listing                Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  jobType                JobType
+  listingId String  @id
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  jobType   JobType
 
   @@index([jobType])
+}
+
+/// 'n Reaksie op 'n plasing: "Ek is beskikbaar". Een per persoon per plasing.
+model Response {
+  id          String         @id @default(cuid())
+  listingId   String
+  listing     Listing        @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  responderId String
+  responder   User           @relation(fields: [responderId], references: [id], onDelete: Cascade)
+  status      ResponseStatus @default(INTERESTED)
+  note        String?        @db.VarChar(300) // "Kan eers 09:00 begin"
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@unique([listingId, responderId])
+  @@index([responderId, status])
+  @@index([listingId, status])
 }
 
 /// Idempotensie: 'n `requestId` (UUID van die kliënt) word net een keer verwerk. Ou rye word ná 30 dae opgeruim.

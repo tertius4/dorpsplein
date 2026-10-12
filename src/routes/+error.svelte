@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import { page } from '$app/state';
 
 	const title = $derived(
@@ -16,7 +17,5 @@
 	{#if page.error?.message}
 		<p class="mt-2 text-stone-600">{page.error.message}</p>
 	{/if}
-	<a href="/" class="mt-8 inline-block rounded-md bg-stone-900 px-4 py-2 text-white">
-		Terug na die begin
-	</a>
+	<Button class="mt-8" href="/">Terug na die begin</Button>
 </main>

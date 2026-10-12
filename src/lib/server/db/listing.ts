@@ -20,6 +20,9 @@ export const listing = {
 	create: (ownerId: string, data: ListingInput, db: Db = prisma()) =>
 		db.listing.create({ data: { ...data, ownerId }, select: { id: true } }),
 
+	/** Net die plasing self, sonder eienaar-kontrole. Gebruik dit nooit om data terug te gee nie. */
+	findById: (id: string, db: Db = prisma()) => db.listing.findUnique({ where: { id } }),
+
 	/** Eienaarskap in die navraag (IDOR): 'n ander gebruiker se plasing gee `null`. */
 	findByIdForOwner: async (id: string, ownerId: string, db: Db = prisma()) => {
 		const listing = await db.listing.findFirst({
@@ -49,6 +52,31 @@ export const listing = {
 					}
 				}
 			}
+		}),
+
+	/**
+	 * Oop plasings van ander mense vir /geleenthede. Sluit uit: eie plasings, geblokkeerde plasers,
+	 * verstreke sperdatums, en plasings waarop `memberId` reeds gereageer het (behalwe onttrek).
+	 * PRIVAATHEID: die plaser se `select` is 'n witlys.
+	 */
+	listOpenForMember: (memberId: string, take: number, db: Db = prisma()) =>
+		db.listing.findMany({
+			where: {
+				status: 'OPEN',
+				ownerId: { not: memberId },
+				owner: { profile: { is: { blocked: false } } },
+				OR: [{ closesAt: null }, { closesAt: { gte: new Date() } }],
+				responses: { none: { responderId: memberId, status: { not: 'WITHDRAWN' } } }
+			},
+			include: {
+				category: { select: { id: true, name: true, icon: true } },
+				job: true,
+				owner: {
+					select: { id: true, name: true, image: true, profile: { select: { photoKey: true } } }
+				}
+			},
+			orderBy: { createdAt: 'desc' },
+			take
 		}),
 
 	listByOwner: async (ownerId: string, db: Db = prisma()) => {
@@ -87,12 +115,21 @@ export const listing = {
 	transition: async (
 		id: string,
 		ownerId: string,
-		from: ListingStatus,
+		from: ListingStatus | ListingStatus[],
 		to: ListingStatus,
 		db: Db = prisma()
 	) => {
 		const { count } = await db.listing.updateMany({
-			where: { id, ownerId, status: from },
+			where: { id, ownerId, status: { in: Array.isArray(from) ? from : [from] } },
+			data: { status: to }
+		});
+		return count;
+	},
+
+	/** Dieselfde oorgang sonder eienaar-kontrole, vir die diens se eie reëls (bv. heropen ná onttrekking). */
+	transitionById: async (id: string, from: ListingStatus, to: ListingStatus, db: Db = prisma()) => {
+		const { count } = await db.listing.updateMany({
+			where: { id, status: from },
 			data: { status: to }
 		});
 		return count;

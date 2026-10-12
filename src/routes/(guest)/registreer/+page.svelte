@@ -1,4 +1,8 @@
 <script lang="ts">
+	import Field from '#lib/components/Field.svelte';
+	import Alert from '#lib/components/Alert.svelte';
+	import { inputClass } from '#lib/styles.ts';
+	import Button from '#lib/components/Button.svelte';
 	import { signInWithGoogle, signUp } from '#lib/remote/auth.remote.ts';
 	import { page } from '$app/state';
 </script>
@@ -11,61 +15,44 @@
 	<h1 class="text-2xl font-bold text-stone-900">Skep ’n rekening</h1>
 
 	{#if page.url.searchParams.get('error')}
-		<p class="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
+		<Alert tone="error" class="mt-4">
 			Aanmelding met Google het nie geslaag nie. Probeer weer, of gebruik jou e-pos.
-		</p>
+		</Alert>
 	{/if}
 
 	<form {...signUp} class="mt-6 space-y-4">
-		<label class="block">
-			<span class="text-sm font-medium text-stone-700">Naam en van</span>
-			<input
+		<Field label="Naam en van" issues={signUp.fields.name.issues() ?? []}
+			><input
 				{...signUp.fields.name.as('text')}
 				autocomplete="name"
 				required
-				class="mt-1 block w-full rounded-md border-stone-300"
-			/>
-			{#each signUp.fields.name.issues() ?? [] as issue (issue.message)}
-				<span class="text-sm text-red-700">{issue.message}</span>
-			{/each}
-		</label>
+				class={inputClass}
+			/></Field
+		>
 
-		<label class="block">
-			<span class="text-sm font-medium text-stone-700">E-pos</span>
-			<input
+		<Field label="E-pos" issues={signUp.fields.email.issues() ?? []}
+			><input
 				{...signUp.fields.email.as('email')}
 				autocomplete="email"
 				required
-				class="mt-1 block w-full rounded-md border-stone-300"
-			/>
-			{#each signUp.fields.email.issues() ?? [] as issue (issue.message)}
-				<span class="text-sm text-red-700">{issue.message}</span>
-			{/each}
-		</label>
+				class={inputClass}
+			/></Field
+		>
 
-		<label class="block">
-			<span class="text-sm font-medium text-stone-700">Wagwoord</span>
-			<input
+		<Field label="Wagwoord" issues={signUp.fields._password.issues() ?? []}
+			><input
 				{...signUp.fields._password.as('password')}
 				autocomplete="new-password"
 				required
-				class="mt-1 block w-full rounded-md border-stone-300"
-			/>
-			{#each signUp.fields._password.issues() ?? [] as issue (issue.message)}
-				<span class="text-sm text-red-700">{issue.message}</span>
-			{/each}
-		</label>
+				class={inputClass}
+			/></Field
+		>
 
 		{#each signUp.fields.issues() ?? [] as issue (issue.message)}
 			<p class="text-sm text-red-700">{issue.message}</p>
 		{/each}
 
-		<button
-			disabled={signUp.pending > 0}
-			class="w-full rounded-md bg-stone-900 px-4 py-2 font-medium text-white disabled:opacity-50"
-		>
-			Registreer
-		</button>
+		<Button block type="submit" disabled={signUp.pending > 0}>Registreer</Button>
 	</form>
 
 	<div class="my-6 flex items-center gap-3 text-sm text-stone-500">
@@ -76,14 +63,10 @@
 		<input
 			{...signInWithGoogle.fields.redirect_to.as('hidden', page.url.searchParams.get('na') ?? '')}
 		/>
-		<button
-			class="w-full rounded-md border border-stone-300 bg-white px-4 py-2 font-medium text-stone-800"
-		>
-			Gaan voort met Google
-		</button>
+		<Button variant="secondary" block type="submit">Gaan voort met Google</Button>
 	</form>
 
 	<p class="mt-6 text-sm text-stone-600">
-		Het jy reeds ’n rekening? <a href="/teken-in" class="underline">Meld aan</a>
+		Het jy reeds ’n rekening? <Button variant="link" href="/teken-in">Meld aan</Button>
 	</p>
 </main>

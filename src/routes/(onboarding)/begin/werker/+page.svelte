@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { inputClass } from '#lib/styles.ts';
+	import Field from '#lib/components/Field.svelte';
+	import Button from '#lib/components/Button.svelte';
 	import { getCurrentUser } from '#lib/remote/auth.remote.ts';
 	import { completeWorkerOnboarding, getOnboardingOptions } from '#lib/remote/onboarding.remote.ts';
 
@@ -12,42 +15,27 @@
 </svelte:head>
 
 <main class="mx-auto max-w-lg px-4 py-12">
-	<a href="/begin" class="text-sm text-stone-600 underline">← Terug</a>
+	<Button variant="subtle" href="/begin">← Terug</Button>
 	<h1 class="mt-2 text-2xl font-bold text-stone-900">Welkom, {user?.name}!</h1>
 	<p class="mt-2 text-stone-600">Net ’n paar vrae, dan kan jy begin.</p>
 
 	<form {...completeWorkerOnboarding} class="mt-8 space-y-8">
 		<fieldset class="space-y-4">
 			<legend class="text-lg font-semibold text-stone-800">1. Jou kontakbesonderhede</legend>
-			<label class="block">
-				<span class="text-sm font-medium text-stone-700">Selnommer</span>
-				<input
-					{...f.phone.as('tel')}
-					autocomplete="tel"
-					required
-					class="mt-1 block w-full rounded-md border-stone-300"
-				/>
-				<span class="text-xs text-stone-500"
-					>Word net gedeel met iemand met wie jy ooreenkom om te werk.</span
-				>
-				{#each f.phone.issues() ?? [] as issue (issue.message)}
-					<span class="block text-sm text-red-700">{issue.message}</span>
-				{/each}
-			</label>
-			<label class="block">
-				<span class="text-sm font-medium text-stone-700"
-					>Beskryf jouself in een sin (opsioneel)</span
-				>
-				<input
+			<Field
+				label="Selnommer"
+				issues={f.phone.issues() ?? []}
+				hint="Word net gedeel met iemand met wie jy ooreenkom om te werk."
+				><input {...f.phone.as('tel')} autocomplete="tel" required class={inputClass} /></Field
+			>
+			<Field label="Beskryf jouself in een sin (opsioneel)" issues={f.headline.issues() ?? []}
+				><input
 					{...f.headline.as('text')}
 					placeholder="bv. Ervare messelaar en teëlwerker"
 					maxlength="80"
-					class="mt-1 block w-full rounded-md border-stone-300"
-				/>
-				{#each f.headline.issues() ?? [] as issue (issue.message)}
-					<span class="block text-sm text-red-700">{issue.message}</span>
-				{/each}
-			</label>
+					class={inputClass}
+				/></Field
+			>
 		</fieldset>
 
 		<fieldset>
@@ -90,9 +78,9 @@
 				<input {...f.popiaConsent.as('checkbox')} class="mt-1" />
 				<span class="text-sm text-stone-700">
 					Ek stem in dat Dorpsplein my inligting verwerk soos beskryf in die
-					<a href="/privaatheid" class="underline">privaatheidsbeleid</a>, en dat my profiel (naam,
-					foto, opskrif, ervaring en kwalifikasies) publiek sigbaar is. My e-pos en selnommer is
-					nooit publiek nie, en ek kan my profiel later privaat maak.
+					<Button variant="link" href="/privaatheid">privaatheidsbeleid</Button>, en dat my profiel
+					(naam, foto, opskrif, ervaring en kwalifikasies) publiek sigbaar is. My e-pos en selnommer
+					is nooit publiek nie, en ek kan my profiel later privaat maak.
 				</span>
 			</label>
 			{#each f.popiaConsent.issues() ?? [] as issue (issue.message)}
@@ -104,11 +92,6 @@
 			<p class="text-sm text-red-700">{issue.message}</p>
 		{/each}
 
-		<button
-			disabled={completeWorkerOnboarding.pending > 0}
-			class="w-full rounded-md bg-stone-900 px-4 py-2 font-medium text-white disabled:opacity-50"
-		>
-			Begin
-		</button>
+		<Button block type="submit" disabled={completeWorkerOnboarding.pending > 0}>Begin</Button>
 	</form>
 </main>

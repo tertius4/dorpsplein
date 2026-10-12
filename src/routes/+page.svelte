@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import { getCategories } from '#lib/remote/categories.remote.ts';
 	import { APP_ENV } from '$app/env/public';
 
@@ -59,7 +60,7 @@
 	</div>
 	<p class="mt-4 text-sm text-stone-600">
 		Het jy reeds ’n rekening?
-		<a href="/teken-in" class="underline">Teken in</a>
+		<Button variant="link" href="/teken-in">Teken in</Button>
 	</p>
 
 	<section class="mt-12">

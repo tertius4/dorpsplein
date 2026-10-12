@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import { page } from '$app/state';
 
 	const error = $derived(page.url.searchParams.get('error'));
@@ -11,12 +12,11 @@
 		<h1 class="text-2xl font-bold text-stone-900">Die skakel werk nie</h1>
 		<p class="mt-4 text-stone-700">
 			{error === 'TOKEN_EXPIRED' ? 'Die skakel het verval.' : 'Die skakel is ongeldig.'}
-			<a href="/teken-in" class="underline">Teken in</a> om ’n nuwe een te kry.
+			<Button variant="link" href="/teken-in">Teken in</Button> om ’n nuwe een te kry.
 		</p>
 	{:else}
 		<h1 class="text-2xl font-bold text-stone-900">Jou e-pos is bevestig 🎉</h1>
 		<p class="mt-4 text-stone-700">Welkom by Dorpsplein.</p>
-		<a href="/" class="mt-6 inline-block rounded-md bg-stone-900 px-4 py-2 text-white">Gaan voort</a
-		>
+		<Button class="mt-6" href="/">Gaan voort</Button>
 	{/if}
 </main>

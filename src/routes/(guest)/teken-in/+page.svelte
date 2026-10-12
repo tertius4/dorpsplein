@@ -1,4 +1,8 @@
 <script lang="ts">
+	import Field from '#lib/components/Field.svelte';
+	import Alert from '#lib/components/Alert.svelte';
+	import { inputClass } from '#lib/styles.ts';
+	import Button from '#lib/components/Button.svelte';
 	import { signIn, signInWithGoogle } from '#lib/remote/auth.remote.ts';
 	import { page } from '$app/state';
 
@@ -13,58 +17,42 @@
 	<h1 class="text-2xl font-bold text-stone-900">Teken in</h1>
 
 	{#if page.url.searchParams.get('error')}
-		<p class="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
+		<Alert tone="error" class="mt-4">
 			Aanmelding met Google het nie geslaag nie. Probeer weer, of gebruik jou e-pos.
-		</p>
+		</Alert>
 	{/if}
 
 	{#if passwordReset}
-		<p class="mt-4 rounded-md bg-green-50 px-3 py-2 text-sm text-green-800">
+		<Alert tone="success" class="mt-4">
 			Jou wagwoord is verander. Teken in met jou nuwe wagwoord.
-		</p>
+		</Alert>
 	{/if}
 
 	<form {...signIn} class="mt-6 space-y-4">
-		<label class="block">
-			<span class="text-sm font-medium text-stone-700">E-pos</span>
-			<input
+		<Field label="E-pos" issues={signIn.fields.email.issues() ?? []}
+			><input
 				{...signIn.fields.email.as('email')}
 				autocomplete="email"
 				required
-				class="mt-1 block w-full rounded-md border-stone-300"
-			/>
-			{#each signIn.fields.email.issues() ?? [] as issue (issue.message)}
-				<span class="text-sm text-red-700">{issue.message}</span>
-			{/each}
-		</label>
+				class={inputClass}
+			/></Field
+		>
 
-		<label class="block">
-			<span class="text-sm font-medium text-stone-700">Wagwoord</span>
+		<Field label="Wagwoord" issues={signIn.fields._password.issues() ?? []}>
 			<input
 				{...signIn.fields._password.as('password')}
 				autocomplete="current-password"
 				required
-				class="mt-1 block w-full rounded-md border-stone-300"
+				class={inputClass}
 			/>
-			{#each signIn.fields._password.issues() ?? [] as issue (issue.message)}
-				<span class="text-sm text-red-700">{issue.message}</span>
-			{/each}
-
-			<a href="/wagwoord-vergeet" class="mt-1 inline-block text-sm text-stone-600 underline">
-				Wagwoord vergeet?
-			</a>
-		</label>
+			<Button variant="subtle" class="mt-1" href="/wagwoord-vergeet">Wagwoord vergeet?</Button>
+		</Field>
 
 		{#each signIn.fields.issues() ?? [] as issue (issue.message)}
 			<p class="text-sm text-red-700">{issue.message}</p>
 		{/each}
 
-		<button
-			disabled={signIn.pending > 0}
-			class="w-full rounded-md bg-stone-900 px-4 py-2 font-medium text-white disabled:opacity-50"
-		>
-			Teken in
-		</button>
+		<Button block type="submit" disabled={signIn.pending > 0}>Teken in</Button>
 
 		<input {...signIn.fields.redirect_to.as('hidden', page.url.searchParams.get('na') ?? '')} />
 	</form>
@@ -77,14 +65,10 @@
 		<input
 			{...signInWithGoogle.fields.redirect_to.as('hidden', page.url.searchParams.get('na') ?? '')}
 		/>
-		<button
-			class="w-full rounded-md border border-stone-300 bg-white px-4 py-2 font-medium text-stone-800"
-		>
-			Gaan voort met Google
-		</button>
+		<Button variant="secondary" block type="submit">Gaan voort met Google</Button>
 	</form>
 
 	<p class="mt-6 text-sm text-stone-600">
-		Het jy nog nie ’n rekening nie? <a href="/registreer" class="underline">Registreer</a>
+		Het jy nog nie ’n rekening nie? <Button variant="link" href="/registreer">Registreer</Button>
 	</p>
 </main>

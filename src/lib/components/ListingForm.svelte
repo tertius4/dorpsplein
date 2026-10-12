@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { inputClass } from '#lib/styles.ts';
+	import Field from '#lib/components/Field.svelte';
+	import Button from '#lib/components/Button.svelte';
 	import { estimateRecipients, saveListing } from '#lib/remote/listings.remote.ts';
 	import { getOnboardingOptions } from '#lib/remote/onboarding.remote.ts';
 
@@ -14,6 +17,9 @@
 		endsAt?: string;
 		closesAt?: string;
 		jobType?: 'PERMANENT' | 'PART_TIME' | 'ODD_JOB' | 'SEASONAL';
+		/** Iemand het reeds gereageer: kategorie en werktipe is gesluit. */
+		locked?: boolean;
+		minCapacity?: number;
 	}
 
 	const { initial = {}, submitLabel }: { initial?: Initial; submitLabel: string } = $props();
@@ -61,7 +67,6 @@
 		};
 	});
 
-	const input = 'mt-1 block w-full rounded-md border-stone-300';
 	const issues = (field: { issues(): { message: string }[] | undefined }) => field.issues() ?? [];
 </script>
 
@@ -69,49 +74,49 @@
 	<input {...f.requestId.as('hidden', requestId)} />
 	<input {...f.id.as('hidden', initial.id ?? '')} />
 
-	<label class="block">
-		<span class="text-sm font-medium text-stone-700">Titel</span>
-		<input
+	<Field label="Titel" issues={issues(f.title)}
+		><input
 			{...f.title.as('text')}
 			required
 			maxlength="100"
 			placeholder="bv. Hulp met die tuin"
-			class={input}
-		/>
-		{#each issues(f.title) as issue (issue.message)}
-			<span class="block text-sm text-red-700">{issue.message}</span>
-		{/each}
-	</label>
+			class={inputClass}
+		/></Field
+	>
 
-	<label class="block">
-		<span class="text-sm font-medium text-stone-700">Kategorie</span>
-		<select {...f.categoryId.as('select')} required class={input}>
-			<option value="">Kies ’n kategorie</option>
-			{#each options.categories as category (category.id)}
-				<option value={category.id}>{category.icon} {category.name}</option>
-			{/each}
-		</select>
-		{#each issues(f.categoryId) as issue (issue.message)}
-			<span class="block text-sm text-red-700">{issue.message}</span>
-		{/each}
-	</label>
+	{#if initial.locked}
+		<input {...f.categoryId.as('hidden', initial.categoryId ?? '')} />
+		<input {...f.jobType.as('hidden', initial.jobType ?? 'ODD_JOB')} />
+		<p class="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-700">
+			Iemand het reeds gereageer, so die kategorie en soort werk kan nie meer verander nie.
+		</p>
+	{:else}
+		<Field label="Kategorie" issues={issues(f.categoryId)}>
+			<select {...f.categoryId.as('select')} required class={inputClass}>
+				<option value="">Kies ’n kategorie</option>
+				{#each options.categories as category (category.id)}
+					<option value={category.id}>{category.icon} {category.name}</option>
+				{/each}
+			</select>
+		</Field>
 
-	<fieldset>
-		<legend class="text-sm font-medium text-stone-700">Soort werk</legend>
-		<div class="mt-1 grid grid-cols-2 gap-2">
-			{#each options.jobTypes as jobType (jobType.value)}
-				<label
-					class="flex items-center gap-2 rounded-md border border-stone-200 bg-white px-3 py-2"
-				>
-					<input {...f.jobType.as('radio', jobType.value)} />
-					<span>{jobType.label}</span>
-				</label>
+		<fieldset>
+			<legend class="text-sm font-medium text-stone-700">Soort werk</legend>
+			<div class="mt-1 grid grid-cols-2 gap-2">
+				{#each options.jobTypes as jobType (jobType.value)}
+					<label
+						class="flex items-center gap-2 rounded-md border border-stone-200 bg-white px-3 py-2"
+					>
+						<input {...f.jobType.as('radio', jobType.value)} />
+						<span>{jobType.label}</span>
+					</label>
+				{/each}
+			</div>
+			{#each issues(f.jobType) as issue (issue.message)}
+				<span class="block text-sm text-red-700">{issue.message}</span>
 			{/each}
-		</div>
-		{#each issues(f.jobType) as issue (issue.message)}
-			<span class="block text-sm text-red-700">{issue.message}</span>
-		{/each}
-	</fieldset>
+		</fieldset>
+	{/if}
 
 	<p
 		class="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-700"
@@ -127,71 +132,56 @@
 		{/if}
 	</p>
 
-	<label class="block">
-		<span class="text-sm font-medium text-stone-700">Beskrywing (opsioneel)</span>
-		<textarea {...f.description.as('text')} rows="5" maxlength="2000" class={input}></textarea>
-		{#each issues(f.description) as issue (issue.message)}
-			<span class="block text-sm text-red-700">{issue.message}</span>
-		{/each}
-	</label>
+	<Field label="Beskrywing (opsioneel)" issues={issues(f.description)}
+		><textarea {...f.description.as('text')} rows="5" maxlength="2000" class={inputClass}
+		></textarea></Field
+	>
 
 	<div class="grid gap-4 sm:grid-cols-2">
-		<label class="block">
-			<span class="text-sm font-medium text-stone-700">Betaling (opsioneel)</span>
-			<input {...f.price.as('text')} maxlength="100" placeholder="bv. R300 per dag" class={input} />
-			{#each issues(f.price) as issue (issue.message)}
-				<span class="block text-sm text-red-700">{issue.message}</span>
-			{/each}
-		</label>
-		<label class="block">
-			<span class="text-sm font-medium text-stone-700">Plek (opsioneel)</span>
-			<input {...f.location.as('text')} maxlength="120" class={input} />
-			{#each issues(f.location) as issue (issue.message)}
-				<span class="block text-sm text-red-700">{issue.message}</span>
-			{/each}
-		</label>
+		<Field label="Betaling (opsioneel)" issues={issues(f.price)}
+			><input
+				{...f.price.as('text')}
+				maxlength="100"
+				placeholder="bv. R300 per dag"
+				class={inputClass}
+			/></Field
+		>
+		<Field label="Plek (opsioneel)" issues={issues(f.location)}
+			><input {...f.location.as('text')} maxlength="120" class={inputClass} /></Field
+		>
 	</div>
 
-	<label class="block">
-		<span class="text-sm font-medium text-stone-700">Hoeveel mense soek jy?</span>
-		<input {...f.capacity.as('text')} inputmode="numeric" required class="{input} sm:w-32" />
-		{#each issues(f.capacity) as issue (issue.message)}
-			<span class="block text-sm text-red-700">{issue.message}</span>
-		{/each}
-	</label>
+	<Field label="Hoeveel mense soek jy?" issues={issues(f.capacity)}
+		><input
+			{...f.capacity.as('text')}
+			inputmode="numeric"
+			required
+			class={[inputClass, 'sm:w-32']}
+		/>
+		{#if initial.minCapacity && initial.minCapacity > 1}
+			<span class="block text-xs text-stone-500"
+				>Minstens {initial.minCapacity}, want jy het reeds mense aanvaar.</span
+			>
+		{/if}</Field
+	>
 
 	<div class="grid gap-4 sm:grid-cols-3">
-		<label class="block">
-			<span class="text-sm font-medium text-stone-700">Begin (opsioneel)</span>
-			<input {...f.startsAt.as('date')} class={input} />
-			{#each issues(f.startsAt) as issue (issue.message)}
-				<span class="block text-sm text-red-700">{issue.message}</span>
-			{/each}
-		</label>
-		<label class="block">
-			<span class="text-sm font-medium text-stone-700">Einde (opsioneel)</span>
-			<input {...f.endsAt.as('date')} class={input} />
-			{#each issues(f.endsAt) as issue (issue.message)}
-				<span class="block text-sm text-red-700">{issue.message}</span>
-			{/each}
-		</label>
-		<label class="block">
-			<span class="text-sm font-medium text-stone-700">Reageer voor (opsioneel)</span>
-			<input {...f.closesAt.as('date')} class={input} />
-			{#each issues(f.closesAt) as issue (issue.message)}
-				<span class="block text-sm text-red-700">{issue.message}</span>
-			{/each}
-		</label>
+		<Field label="Begin (opsioneel)" issues={issues(f.startsAt)}
+			><input {...f.startsAt.as('date')} class={inputClass} /></Field
+		>
+		<Field label="Einde (opsioneel)" issues={issues(f.endsAt)}
+			><input {...f.endsAt.as('date')} class={inputClass} /></Field
+		>
+		<Field label="Reageer voor (opsioneel)" issues={issues(f.closesAt)}
+			><input {...f.closesAt.as('date')} class={inputClass} /></Field
+		>
 	</div>
 
 	{#each f.issues() ?? [] as issue (issue.message)}
 		<p class="text-sm text-red-700">{issue.message}</p>
 	{/each}
 
-	<button
-		disabled={saveListing.pending > 0}
-		class="w-full rounded-md bg-stone-900 px-4 py-2 font-medium text-white disabled:opacity-50"
-	>
+	<Button block type="submit" disabled={saveListing.pending > 0}>
 		{submitLabel}
-	</button>
+	</Button>
 </form>

@@ -7,12 +7,15 @@ export async function getHomeOverview(
 	userId: string,
 	user: { name: string; image?: string | null }
 ) {
-	const [profile, interests, qualificationCount, openListings] = await Promise.all([
-		DB.profile.findByUserId(userId),
-		DB.interest.findByUser(userId),
-		DB.qualification.countByUser(userId),
-		DB.listing.countOpenByOwner(userId)
-	]);
+	const [profile, interests, qualificationCount, openListings, waitingResponses, myLiveResponses] =
+		await Promise.all([
+			DB.profile.findByUserId(userId),
+			DB.interest.findByUser(userId),
+			DB.qualification.countByUser(userId),
+			DB.listing.countOpenByOwner(userId),
+			DB.response.countWaitingForOwner(userId),
+			DB.response.countLiveByResponder(userId)
+		]);
 
 	// Wat 'n profiel sterk maak, met 'n skakel na die regte afdeling van /profiel.
 	const checklist = [
@@ -49,6 +52,8 @@ export async function getHomeOverview(
 		publicProfile: profile?.publicProfile ?? true,
 		profileUrl: `${BETTER_AUTH_URL}/mense/${userId}`,
 		openListings,
+		waitingResponses,
+		myLiveResponses,
 		checklist,
 		done: checklist.filter((item) => item.done).length
 	};

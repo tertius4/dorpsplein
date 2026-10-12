@@ -1,4 +1,7 @@
 <script lang="ts">
+	import Field from '#lib/components/Field.svelte';
+	import { inputClass } from '#lib/styles.ts';
+	import Button from '#lib/components/Button.svelte';
 	import { forgotPassword } from '#lib/remote/auth.remote.ts';
 </script>
 
@@ -15,7 +18,7 @@
 			kies. Kyk ook in jou spam-vouer. Die skakel is 1 uur geldig.
 		</p>
 		<p class="mt-6 text-sm text-stone-600">
-			<a href="/teken-in" class="underline">Terug na teken in</a>
+			<Button variant="link" href="/teken-in">Terug na teken in</Button>
 		</p>
 	{:else}
 		<p class="mt-4 text-stone-700">
@@ -23,33 +26,24 @@
 		</p>
 
 		<form {...forgotPassword} class="mt-6 space-y-4">
-			<label class="block">
-				<span class="text-sm font-medium text-stone-700">E-pos</span>
-				<input
+			<Field label="E-pos" issues={forgotPassword.fields.email.issues() ?? []}
+				><input
 					{...forgotPassword.fields.email.as('email')}
 					autocomplete="email"
 					required
-					class="mt-1 block w-full rounded-md border-stone-300"
-				/>
-				{#each forgotPassword.fields.email.issues() ?? [] as issue (issue.message)}
-					<span class="text-sm text-red-700">{issue.message}</span>
-				{/each}
-			</label>
+					class={inputClass}
+				/></Field
+			>
 
 			{#each forgotPassword.fields.issues() ?? [] as issue (issue.message)}
 				<p class="text-sm text-red-700">{issue.message}</p>
 			{/each}
 
-			<button
-				disabled={forgotPassword.pending > 0}
-				class="w-full rounded-md bg-stone-900 px-4 py-2 font-medium text-white disabled:opacity-50"
-			>
-				Stuur skakel
-			</button>
+			<Button block type="submit" disabled={forgotPassword.pending > 0}>Stuur skakel</Button>
 		</form>
 
 		<p class="mt-6 text-sm text-stone-600">
-			Onthou jy dit tog? <a href="/teken-in" class="underline">Teken in</a>
+			Onthou jy dit tog? <Button variant="link" href="/teken-in">Teken in</Button>
 		</p>
 	{/if}
 </main>

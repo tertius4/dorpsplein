@@ -47,6 +47,8 @@ export async function getPublicProfile(userId: string, viewerId: string | null) 
 	if (!visible) error(404, 'Hierdie profiel bestaan nie of is nie sigbaar nie');
 
 	const jobTypes = new Set<JobType>(user.jobTypePrefs.map((p) => p.jobType));
+	// Net 'n getal: geen besonderhede oor wie of watter plasings nie.
+	const completedCount = await DB.response.countCompletedForUser(user.id);
 
 	return {
 		id: user.id,
@@ -57,6 +59,7 @@ export async function getPublicProfile(userId: string, viewerId: string | null) 
 		memberSince: `${MONTHS[user.createdAt.getMonth()]} ${user.createdAt.getFullYear()}`,
 		headline: profile.headline,
 		bio: profile.bio,
+		completedCount,
 		isWorker: user.interests.length > 0,
 		available: profile.available,
 		interests: user.interests.map((i) => ({

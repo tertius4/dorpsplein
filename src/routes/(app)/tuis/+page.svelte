@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Card from '#lib/components/Card.svelte';
+	import Button from '#lib/components/Button.svelte';
 	import Avatar from '#lib/components/Avatar.svelte';
 	import { getHome } from '#lib/remote/home.remote.ts';
 	import { setAvailable } from '#lib/remote/profile.remote.ts';
@@ -54,21 +56,19 @@
 			</label>
 		</section>
 	{:else}
-		<section class="rounded-lg border border-stone-200 bg-white p-4">
+		<Card>
 			<h2 class="font-semibold text-stone-900">Wil jy ook werk kry?</h2>
 			<p class="text-sm text-stone-600">
 				Kies waaroor jy wil hoor, dan sê ons jou as iemand iets plaas wat pas.
 			</p>
-			<a
-				href="/profiel#belangstellings"
-				class="mt-3 inline-block rounded-md border border-stone-300 px-3 py-2 text-sm font-medium text-stone-800"
-				>Kies belangstellings</a
+			<Button variant="secondary" size="sm" class="mt-3" href="/profiel#belangstellings"
+				>Kies belangstellings</Button
 			>
-		</section>
+		</Card>
 	{/if}
 
 	{#if home.isWorker && home.done < home.checklist.length}
-		<section class="rounded-lg border border-stone-200 bg-white p-4">
+		<Card>
 			<h2 class="font-semibold text-stone-900">Maak jou profiel sterker</h2>
 			<p class="text-sm text-stone-600">’n Volledige profiel help werkgewers om jou te kies.</p>
 			<div class="mt-3 h-2 rounded-full bg-stone-200" aria-hidden="true">
@@ -84,16 +84,16 @@
 						{#if item.done}
 							<span class="text-stone-500 line-through">✔ {item.label}</span>
 						{:else}
-							<a href={item.href} class="text-stone-900 underline">○ {item.label}</a>
+							<Button variant="link" class="text-stone-900" href={item.href}>○ {item.label}</Button>
 						{/if}
 					</li>
 				{/each}
 			</ul>
-		</section>
+		</Card>
 	{/if}
 
 	{#if home.isWorker && home.publicProfile}
-		<section class="rounded-lg border border-stone-200 bg-white p-4">
+		<Card>
 			<h2 class="font-semibold text-stone-900">Deel jou profiel</h2>
 			<p class="text-sm text-stone-600">Stuur die skakel aan iemand wat dalk werk vir jou het.</p>
 			<div class="mt-3 flex gap-2">
@@ -103,18 +103,42 @@
 					aria-label="Skakel na jou profiel"
 					class="min-w-0 flex-1 rounded-md border-stone-300 text-sm"
 				/>
-				<button
-					type="button"
-					onclick={copyProfileUrl}
-					class="rounded-md bg-stone-900 px-3 py-2 text-sm font-medium text-white"
-				>
+				<Button size="sm" onclick={copyProfileUrl}>
 					{copied ? 'Gekopieer ✓' : 'Kopieer'}
-				</button>
+				</Button>
 			</div>
+		</Card>
+	{/if}
+
+	{#if home.waitingResponses > 0}
+		<section class="rounded-lg border border-amber-300 bg-amber-50 p-4">
+			<h2 class="font-semibold text-amber-950">
+				{home.waitingResponses}
+				{home.waitingResponses === 1 ? 'reaksie wag' : 'reaksies wag'} op jou besluit
+			</h2>
+			<Button variant="link" class="mt-2 text-sm text-amber-950" href="/plasings">
+				Kyk na jou plasings
+			</Button>
 		</section>
 	{/if}
 
-	<section class="rounded-lg border border-stone-200 bg-white p-4">
+	<Card>
+		<h2 class="font-semibold text-stone-900">Geleenthede</h2>
+		<p class="text-sm text-stone-600">
+			{#if home.myLiveResponses > 0}
+				Jy het {home.myLiveResponses}
+				{home.myLiveResponses === 1 ? 'reaksie' : 'reaksies'} wat nog loop.
+			{:else}
+				Kyk watter werk nou beskikbaar is.
+			{/if}
+		</p>
+		<div class="mt-3 flex gap-2">
+			<Button size="sm" href="/geleenthede">Geleenthede</Button>
+			<Button variant="secondary" size="sm" href="/my-reaksies">My reaksies</Button>
+		</div>
+	</Card>
+
+	<Card>
 		<h2 class="font-semibold text-stone-900">Jou plasings</h2>
 		<p class="text-sm text-stone-600">
 			{#if home.openListings === 0}
@@ -124,18 +148,8 @@
 			{/if}
 		</p>
 		<div class="mt-3 flex gap-2">
-			<a
-				href="/plasings/nuut"
-				class="rounded-md bg-stone-900 px-3 py-2 text-sm font-medium text-white"
-			>
-				Plaas werk
-			</a>
-			<a
-				href="/plasings"
-				class="rounded-md border border-stone-300 px-3 py-2 text-sm font-medium text-stone-800"
-			>
-				My plasings
-			</a>
+			<Button size="sm" href="/plasings/nuut">Plaas werk</Button>
+			<Button variant="secondary" size="sm" href="/plasings">My plasings</Button>
 		</div>
-	</section>
+	</Card>
 </main>

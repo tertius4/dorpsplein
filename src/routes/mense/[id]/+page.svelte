@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Alert from '#lib/components/Alert.svelte';
+	import Button from '#lib/components/Button.svelte';
 	import Avatar from '#lib/components/Avatar.svelte';
 	import { getPublicProfile } from '#lib/remote/people.remote.ts';
 	import type { PageProps } from './$types';
@@ -14,10 +16,10 @@
 
 <main class="mx-auto max-w-lg px-4 py-12">
 	{#if person.isOwn}
-		<p class="mb-6 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">
+		<Alert class="mb-6">
 			So sien ander jou profiel{person.isPublic ? '' : ' (privaat: net aangemelde lede)'}.
-			<a href="/profiel" class="underline">Wysig</a>
-		</p>
+			<Button variant="link" href="/profiel">Wysig</Button>
+		</Alert>
 	{/if}
 
 	<header class="flex items-center gap-4">
@@ -33,7 +35,11 @@
 		<div>
 			<h1 class="text-2xl font-bold text-stone-900">{person.name}</h1>
 			{#if person.headline}<p class="text-stone-700">{person.headline}</p>{/if}
-			<p class="text-sm text-stone-500">Lid sedert {person.memberSince}</p>
+			<p class="text-sm text-stone-500">
+				Lid sedert {person.memberSince}{person.completedCount > 0
+					? ` · ${person.completedCount} voltooi`
+					: ''}
+			</p>
 		</div>
 	</header>
 

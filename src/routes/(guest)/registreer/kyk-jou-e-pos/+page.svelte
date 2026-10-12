@@ -7,8 +7,8 @@
 		uur geldig.
 	</p>
 	<p class="mt-4 text-sm text-stone-600">
-		Niks gekry nie? Kyk in jou spam-vouer, of <a href="/teken-in" class="underline"
-			>probeer aanmeld</a
+		Niks gekry nie? Kyk in jou spam-vouer, of <Button variant="link" href="/teken-in"
+			>probeer aanmeld</Button
 		>. Dan stuur ons ’n nuwe skakel.
 	</p>
 </main>

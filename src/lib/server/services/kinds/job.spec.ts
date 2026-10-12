@@ -8,3 +8,15 @@ describe('jobKind.matchFilter', () => {
 		});
 	});
 });
+
+describe('jobKind.matchesPreferences', () => {
+	it('pas net as die werktipe een van die lid se voorkeure is', () => {
+		expect(
+			jobKind.matchesPreferences({ jobType: 'ODD_JOB' }, { jobTypes: ['ODD_JOB', 'SEASONAL'] })
+		).toBe(true);
+		expect(jobKind.matchesPreferences({ jobType: 'PERMANENT' }, { jobTypes: ['ODD_JOB'] })).toBe(
+			false
+		);
+		expect(jobKind.matchesPreferences({ jobType: 'PERMANENT' }, { jobTypes: [] })).toBe(false);
+	});
+});

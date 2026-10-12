@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import './layout.css';
 	import favicon from '#lib/assets/favicon.svg';
 	import Avatar from '#lib/components/Avatar.svelte';
@@ -9,9 +10,10 @@
 	let { children }: LayoutProps = $props();
 	const user = $derived(await getCurrentUser());
 
-	/** Net bladsye wat bestaan; Geleenthede en Kennisgewings kom in Fase 3–4. */
+	/** Net bladsye wat bestaan; Kennisgewings kom in Fase 4. */
 	const NAV = [
 		{ href: '/tuis', label: 'Tuis', icon: '🏠' },
+		{ href: '/geleenthede', label: 'Geleenthede', icon: '🔎' },
 		{ href: '/plasings', label: 'Plasings', icon: '📋' },
 		{ href: '/profiel', label: 'Profiel', icon: '👤' }
 	];
@@ -50,15 +52,13 @@
 						<span class="hidden sm:inline">{user.name}</span>
 					</a>
 					<form {...signOut}>
-						<button class="text-stone-600 underline">Teken uit</button>
+						<Button variant="link" type="submit" class="text-stone-600">Teken uit</Button>
 					</form>
 				</div>
 			{:else}
 				<div class="flex items-center gap-3 text-sm">
-					<a href="/teken-in" class="text-stone-700 underline">Teken in</a>
-					<a href="/registreer" class="rounded-md bg-stone-900 px-3 py-1.5 font-medium text-white">
-						Registreer
-					</a>
+					<Button variant="link" class="text-stone-700" href="/teken-in">Teken in</Button>
+					<Button size="sm" href="/registreer">Registreer</Button>
 				</div>
 			{/if}
 		</div>
@@ -73,11 +73,11 @@
 			? 'mb-14 sm:mb-0'
 			: ''}"
 	>
-		<a href="/privaatheid" class="underline">Privaatheid</a>
+		<Button variant="link" href="/privaatheid">Privaatheid</Button>
 		·
-		<a href="/terme" class="underline">Terme</a>
+		<Button variant="link" href="/terme">Terme</Button>
 		·
-		<a href="mailto:privaat@dorpsplein.co.za" class="underline">Kontak</a>
+		<Button variant="link" href="mailto:privaat@dorpsplein.co.za">Kontak</Button>
 	</footer>
 </div>
 

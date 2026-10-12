@@ -29,5 +29,7 @@ export const jobKind = {
 
 	matchFilter: (d) => ({ jobTypePrefs: { some: { jobType: d.jobType } } }),
 
+	matchesPreferences: (d, prefs) => prefs.jobTypes.includes(d.jobType),
+
 	label: { singular: 'Werk', plural: 'Werk', respond: 'Ek is beskikbaar' }
 } satisfies KindModule<JobDetailsInput>;

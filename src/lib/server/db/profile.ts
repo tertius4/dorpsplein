@@ -5,6 +5,18 @@ import type { Prisma } from './generated/client.ts';
 export const profile = {
 	findByUserId: (userId: string, db: Db = prisma()) => db.profile.findUnique({ where: { userId } }),
 
+	/**
+	 * PRIVAATHEID: die enigste plek wat selnommers in grootmaat gelees word. Die service roep dit
+	 * net aan vir mense met 'n `ACCEPTED`-reaksie tussen die twee partye.
+	 */
+	findPhones: async (userIds: string[], db: Db = prisma()) => {
+		const rows = await db.profile.findMany({
+			where: { userId: { in: userIds } },
+			select: { userId: true, phone: true }
+		});
+		return new Map(rows.map((r) => [r.userId, r.phone]));
+	},
+
 	upsert: (
 		userId: string,
 		data: Omit<Prisma.ProfileUncheckedCreateInput, 'userId'>,

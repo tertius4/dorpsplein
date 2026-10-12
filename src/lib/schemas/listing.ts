@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { JOB_TYPES, requestId } from './fields.ts';
 
 /** Opsionele teks: leë of ontbrekende waarde word `null`. */
-const optionalText = (max: number) =>
+export const optionalText = (max: number) =>
 	z
 		.string()
 		.trim()

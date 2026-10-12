@@ -6,9 +6,20 @@ function isConnectionError(error: unknown) {
 	return typeof Event !== 'undefined' && error instanceof Event && error.type === 'error';
 }
 
-/** Skep 'n Prisma-kliënt teen Neon. Geen SvelteKit-afhanklikhede nie, sodat skripte dit ook kan gebruik. */
-export function createPrisma(connectionString: string) {
-	return new PrismaClient({ adapter: new PrismaNeon({ connectionString }) }).$extends({
+/**
+ * Skep 'n Prisma-kliënt teen Neon. Geen SvelteKit-afhanklikhede nie, sodat skripte dit ook kan gebruik.
+ * `transactionTimeout` (ms) is net vir toetse teen 'n stadige Neon `dev`; produksie hou Prisma se 5 s.
+ */
+export function createPrisma(
+	connectionString: string,
+	options: { transactionTimeout?: number } = {}
+) {
+	return new PrismaClient({
+		adapter: new PrismaNeon({ connectionString }),
+		...(options.transactionTimeout && {
+			transactionOptions: { timeout: options.transactionTimeout }
+		})
+	}).$extends({
 		name: 'retry-connection',
 		query: {
 			async $allOperations({ args, query }) {

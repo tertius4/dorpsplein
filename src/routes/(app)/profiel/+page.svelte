@@ -1,4 +1,9 @@
 <script lang="ts">
+	import Card from '#lib/components/Card.svelte';
+	import { inputClass } from '#lib/styles.ts';
+	import Field from '#lib/components/Field.svelte';
+	import Button from '#lib/components/Button.svelte';
+	import { confirmAction } from '#lib/client/confirm.ts';
 	import { resizeImage } from '#lib/client/resize-image.ts';
 	import Avatar from '#lib/components/Avatar.svelte';
 	import {
@@ -21,7 +26,12 @@
 	const qualification = addQualification.fields;
 
 	async function remove(id: string, name: string) {
-		if (confirm(`Verwyder “${name}”?`)) await removeQualification(id);
+		const ok = await confirmAction({
+			title: `Verwyder “${name}”?`,
+			confirmLabel: 'Verwyder',
+			danger: true
+		});
+		if (ok) await removeQualification(id);
 	}
 
 	let photoForm: HTMLFormElement;
@@ -75,13 +85,9 @@
 				/>
 			</label>
 			{#if me.hasOwnPhoto}
-				<button
-					type="button"
-					onclick={() => removePhoto()}
-					class="block text-sm text-red-700 underline"
-				>
+				<Button variant="danger-link" class="block" onclick={() => removePhoto()}>
 					Verwyder foto
-				</button>
+				</Button>
 			{/if}
 			{#each [...(uploadPhoto.fields.allIssues() ?? []).map((i) => i.message), photoError].filter(Boolean) as message (message)}
 				<p class="text-sm text-red-700">{message}</p>
@@ -92,7 +98,7 @@
 		</div>
 	</section>
 
-	<section class="rounded-lg border border-stone-200 bg-white p-4">
+	<Card>
 		<label class="flex items-center justify-between gap-4">
 			<span>
 				<span class="font-medium text-stone-900">Beskikbaar vir werk</span>
@@ -105,9 +111,9 @@
 				class="h-5 w-5"
 			/>
 		</label>
-	</section>
+	</Card>
 
-	<section class="rounded-lg border border-stone-200 bg-white p-4">
+	<Card>
 		<label class="flex items-center justify-between gap-4">
 			<span>
 				<span class="font-medium text-stone-900">Wys my profiel publiek</span>
@@ -123,69 +129,54 @@
 				class="h-5 w-5"
 			/>
 		</label>
-		<a href="/mense/{me.id}" class="mt-3 inline-block text-sm underline">Sien my publieke profiel</a
+		<Button variant="link" class="mt-3 text-sm" href="/mense/{me.id}"
+			>Sien my publieke profiel</Button
 		>
-	</section>
+	</Card>
 
 	<section id="oor-my" class="scroll-mt-20">
 		<h2 class="text-lg font-semibold text-stone-800">Oor my</h2>
 		<form {...updateAbout} class="mt-4 space-y-4">
-			<label class="block">
-				<span class="text-sm font-medium text-stone-700">Naam en van</span>
-				<input
+			<Field label="Naam en van" issues={about.name.issues() ?? []}
+				><input
 					{...about.name.as('text', me.name)}
 					autocomplete="name"
 					required
-					class="mt-1 block w-full rounded-md border-stone-300"
-				/>
-				{#each about.name.issues() ?? [] as issue (issue.message)}
-					<span class="block text-sm text-red-700">{issue.message}</span>
-				{/each}
-			</label>
+					class={inputClass}
+				/></Field
+			>
 
 			<p class="text-sm text-stone-600">E-pos: {me.email}</p>
 
-			<label class="block">
-				<span class="text-sm font-medium text-stone-700">Beskryf jouself in een sin</span>
-				<input
+			<Field label="Beskryf jouself in een sin" issues={about.headline.issues() ?? []}
+				><input
 					{...about.headline.as('text', me.headline)}
 					placeholder="bv. Ervare messelaar en teëlwerker"
 					maxlength="80"
-					class="mt-1 block w-full rounded-md border-stone-300"
-				/>
-				{#each about.headline.issues() ?? [] as issue (issue.message)}
-					<span class="block text-sm text-red-700">{issue.message}</span>
-				{/each}
-			</label>
+					class={inputClass}
+				/></Field
+			>
 
-			<label class="block">
-				<span class="text-sm font-medium text-stone-700">Oor my</span>
-				<textarea
+			<Field label="Oor my" issues={about.bio.issues() ?? []}
+				><textarea
 					{...about.bio.as('text', me.bio)}
 					rows="4"
 					maxlength="1000"
 					placeholder="Jou ervaring, wat jy graag doen, wanneer jy beskikbaar is …"
-					class="mt-1 block w-full rounded-md border-stone-300"></textarea>
-				{#each about.bio.issues() ?? [] as issue (issue.message)}
-					<span class="block text-sm text-red-700">{issue.message}</span>
-				{/each}
-			</label>
+					class={inputClass}></textarea></Field
+			>
 
-			<label class="block">
-				<span class="text-sm font-medium text-stone-700">Selnommer</span>
-				<input
+			<Field
+				label="Selnommer"
+				issues={about.phone.issues() ?? []}
+				hint="Word net gedeel met iemand met wie jy ooreenkom om te werk."
+				><input
 					{...about.phone.as('tel', me.phone)}
 					autocomplete="tel"
 					required
-					class="mt-1 block w-full rounded-md border-stone-300"
-				/>
-				<span class="text-xs text-stone-500">
-					Word net gedeel met iemand met wie jy ooreenkom om te werk.
-				</span>
-				{#each about.phone.issues() ?? [] as issue (issue.message)}
-					<span class="block text-sm text-red-700">{issue.message}</span>
-				{/each}
-			</label>
+					class={inputClass}
+				/></Field
+			>
 
 			{#each about.issues() ?? [] as issue (issue.message)}
 				<p class="text-sm text-red-700">{issue.message}</p>
@@ -193,12 +184,7 @@
 			{#if updateAbout.result?.saved}
 				<p class="text-sm text-green-700">Gestoor ✓</p>
 			{/if}
-			<button
-				disabled={updateAbout.pending > 0}
-				class="rounded-md bg-stone-900 px-4 py-2 font-medium text-white disabled:opacity-50"
-			>
-				Stoor
-			</button>
+			<Button type="submit" disabled={updateAbout.pending > 0}>Stoor</Button>
 		</form>
 	</section>
 
@@ -232,12 +218,7 @@
 			{#if updateInterests.result?.saved}
 				<p class="text-sm text-green-700">Gestoor ✓</p>
 			{/if}
-			<button
-				disabled={updateInterests.pending > 0}
-				class="rounded-md bg-stone-900 px-4 py-2 font-medium text-white disabled:opacity-50"
-			>
-				Stoor
-			</button>
+			<Button type="submit" disabled={updateInterests.pending > 0}>Stoor</Button>
 		</form>
 	</section>
 
@@ -264,12 +245,7 @@
 			{#if updateJobPreferences.result?.saved}
 				<p class="text-sm text-green-700">Gestoor ✓</p>
 			{/if}
-			<button
-				disabled={updateJobPreferences.pending > 0}
-				class="rounded-md bg-stone-900 px-4 py-2 font-medium text-white disabled:opacity-50"
-			>
-				Stoor
-			</button>
+			<Button type="submit" disabled={updateJobPreferences.pending > 0}>Stoor</Button>
 		</form>
 	</section>
 	<section id="kwalifikasies" class="scroll-mt-20">
@@ -288,13 +264,7 @@
 								</span>
 							{/if}
 						</span>
-						<button
-							type="button"
-							onclick={() => remove(q.id, q.name)}
-							class="text-sm text-red-700 underline"
-						>
-							Verwyder
-						</button>
+						<Button variant="danger-link" onclick={() => remove(q.id, q.name)}>Verwyder</Button>
 					</li>
 				{/each}
 			</ul>
@@ -304,19 +274,15 @@
 
 		{#if me.canAddQualification}
 			<form {...addQualification} class="mt-4 space-y-3 rounded-md bg-stone-100 p-3">
-				<label class="block">
-					<span class="text-sm font-medium text-stone-700">Kwalifikasie</span>
-					<input
+				<Field label="Kwalifikasie" issues={qualification.name.issues() ?? []}
+					><input
 						{...qualification.name.as('text')}
 						placeholder="bv. Elektrisiën – Trade Test"
 						maxlength="120"
 						required
-						class="mt-1 block w-full rounded-md border-stone-300"
-					/>
-					{#each qualification.name.issues() ?? [] as issue (issue.message)}
-						<span class="block text-sm text-red-700">{issue.message}</span>
-					{/each}
-				</label>
+						class={inputClass}
+					/></Field
+				>
 				<div class="grid grid-cols-3 gap-3">
 					<label class="col-span-2 block">
 						<span class="text-sm font-medium text-stone-700">Uitgereik deur</span>
@@ -324,35 +290,26 @@
 							{...qualification.issuer.as('text')}
 							placeholder="bv. SAQA"
 							maxlength="120"
-							class="mt-1 block w-full rounded-md border-stone-300"
+							class={inputClass}
 						/>
 						{#each qualification.issuer.issues() ?? [] as issue (issue.message)}
 							<span class="block text-sm text-red-700">{issue.message}</span>
 						{/each}
 					</label>
-					<label class="block">
-						<span class="text-sm font-medium text-stone-700">Jaar</span>
-						<input
+					<Field label="Jaar" issues={qualification.year.issues() ?? []}
+						><input
 							{...qualification.year.as('text')}
 							inputmode="numeric"
 							maxlength="4"
 							placeholder="2019"
-							class="mt-1 block w-full rounded-md border-stone-300"
-						/>
-						{#each qualification.year.issues() ?? [] as issue (issue.message)}
-							<span class="block text-sm text-red-700">{issue.message}</span>
-						{/each}
-					</label>
+							class={inputClass}
+						/></Field
+					>
 				</div>
 				{#each qualification.issues() ?? [] as issue (issue.message)}
 					<p class="text-sm text-red-700">{issue.message}</p>
 				{/each}
-				<button
-					disabled={addQualification.pending > 0}
-					class="rounded-md bg-stone-900 px-4 py-2 font-medium text-white disabled:opacity-50"
-				>
-					Voeg by
-				</button>
+				<Button type="submit" disabled={addQualification.pending > 0}>Voeg by</Button>
 			</form>
 		{:else}
 			<p class="mt-4 text-sm text-stone-600">Jy het die maksimum aantal kwalifikasies bereik.</p>
