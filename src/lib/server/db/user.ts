@@ -1,4 +1,6 @@
 import { prisma } from './client.ts';
+import type { Db } from './create.ts';
+import type { Prisma } from './generated/client.ts';
 
 export const user = {
 	/**
@@ -38,5 +40,7 @@ export const user = {
 					orderBy: [{ year: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }]
 				}
 			}
-		})
+		}),
+
+	countMatching: (where: Prisma.UserWhereInput, db: Db = prisma()) => db.user.count({ where })
 };
