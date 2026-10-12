@@ -1,6 +1,6 @@
 # Dorpsplein — Plan
 
-> **Stand van sake (12 Oktober 2026):** Fase 0 (fondament), Fase 1 (aanmelding en profiele) en Fase 2 (plasings en passing) is klaar en in produksie op <https://dorpsplein.co.za>. **Volgende: Fase 3, reaksies en aanvaarding** (sien §11).
+> **Stand van sake (12 Oktober 2026):** Fase 0 (fondament), Fase 1 (aanmelding en profiele) en Fase 2 (plasings en passing) is klaar en in produksie op <https://dorpsplein.co.za>. Fase 3 (reaksies en aanvaarding) is ook klaar en in produksie. Die frontend word herontwerp; die blaaier- en Playwright-toetse vir Fase 3 is daarom oorgeslaan en volg ná die herontwerp (sien §11 → Fase 3 → Wat nog oor is). **Volgende: Fase 4, kennisgewings.**
 
 ## 1. Visie
 
@@ -15,8 +15,8 @@ Dorpsplein moet ook **vanlyn werk**. As dit as 'n app op die foon geïnstalleer 
 1. Mense stel hul **belangstellings** in: kategorieë waaroor hulle kennisgewings wil kry. ✅ _gebou_
 2. Iemand skep 'n **plasing** (`Listing`) van 'n sekere **soort** (`kind`). ✅ _gebou_
 3. Almal wie se belangstellings pas, kry 'n **kennisgewing**. ✅ _passing gebou_ · ⏳ _Fase 4 (kennisgewing)_
-4. Hulle **reageer** (`Response`): "Ek stel belang / is beskikbaar". ⏳ _Fase 3_
-5. Die plaser **aanvaar** een of meer reaksies. Kontakbesonderhede word gedeel en die plasing sluit wanneer dit vol is. ⏳ _Fase 3_
+4. Hulle **reageer** (`Response`): "Ek stel belang / is beskikbaar". ✅ _gebou (Fase 3)_
+5. Die plaser **aanvaar** een of meer reaksies. Kontakbesonderhede word gedeel en die plasing sluit wanneer dit vol is. ✅ _gebou (Fase 3)_
 
 ### Eerste soort: `JOB`
 
@@ -40,6 +40,8 @@ _Dienste en vakmanne word later 'n eie soort (`SERVICE`)._
 - **Eienaarskap in die navraag (IDOR):** wysig of vee uit met `where: { id, userId }` (bv. `deleteOwned`), nie net `where: { id }` nie.
 - **Vanlyn: die kliënt kas en staan in die tou; die bediener besluit** (Fase 5). Elke aksie word eers deur die bediener gevalideer wanneer dit gesinchroniseer word.
 - **Mutasies word idempotent** vanaf Fase 2: elke plasing-`form`/`command` aanvaar 'n `requestId` (UUID van die kliënt), en die bediener verwerk dieselfde `requestId` nooit twee keer nie. Die bestaande profiel-mutasies stel net waardes en kry dit eers in Fase 5 (vanlyn).
+- **Gedeelde UI-komponente, geen rou Tailwind vir knoppies, velde of kaarte nie.** Gebruik `Button` (ook as skakel met `href`), `Field` + `inputClass`, `Card`, `Badge`, `Alert` en `EmptyState` uit `#lib/components/`, en `buttonClass()` / `inputClass` uit `#lib/styles.ts`. 'n Nuwe voorkoms word 'n nuwe variant in `styles.ts`, nie eenmalige klasse nie.
+- **Geen `alert()`, `confirm()` of `prompt()` nie.** Gebruik `confirmAction()` (`#lib/client/confirm.ts`): dit `mount()` `ConfirmModal.svelte` (bo-op die generiese `Modal.svelte` met 'n `children`-snippet wat `close()` kry) en `unmount()` dit weer. 'n Nuwe soort dialoog is 'n eie komponent bo-op `Modal`.
 - **Soort-modules:** alles wat van 'n soort afhang (detailvelde, validasie, passing, vertoonteks) leef in een lêer per soort (`services/kinds/job.ts`). Die res van die kode is soort-agnosties.
 - **Kode en kommentaar in Engels of Afrikaans (wees konsekwent per lêer); UI-teks en URL's in Afrikaans.**
 
@@ -128,6 +130,8 @@ _Dienste en vakmanne word later 'n eie soort (`SERVICE`)._
 | Prisma se interaktiewe transaksie het 'n verstek-tydsgrens van 5 s; Neon is ±170 ms per navraag                             | Hou transaksies kort. Sewe gelyktydige pogings vir een gebruiker onder die advisory lock oorskry dit (toetse gebruik hoogstens twee)                                            |
 | `prisma migrate dev` weier om 'n migrasie wat data uitvee nie-interaktief te skep                                           | Skryf die migrasie met die hand (`migration.sql`) en voer `npx prisma migrate dev` uit; `npx prisma generate` daarna                                                            |
 | Migrasie-name sorteer op datum; `remove_drivers_licence` en `remove_worker_profile` is `20261013…` (vooruit gedateer)       | 'n Volgende migrasie moet 'n later datum as `20261013090000` kry (wag tot ná 13 Oktober 09:00, of hernoem sy gids), anders sorteer dit **voor** dié twee                        |
+| Die terminaal gebruik Node 18; Prisma en Vite verwag die `.nvmrc`-weergawe (24)                                             | `source ~/.nvm/nvm.sh && nvm use` voor `npm`/`npx`                                                                                                                              |
+| Neon `dev` is soms stadig (>500 ms per navraag): databasistoetse oorskry Prisma se 5 s-transaksietydsgrens                  | `createPrisma(url, { transactionTimeout: 20_000 })` in die toets; produksie hou 5 s. Hou stappe in 'n transaksie min (elke navraag ±170 ms vanaf SA)                            |
 | Vitest laai nie `.env` nie                                                                                                  | `src/test/setup.ts` (`process.loadEnvFile`); databasistoetse is `describe.skipIf(!process.env.DATABASE_URL)` en loop teen Neon `dev` met `test<nn>-`-id's wat hulle self uitvee |
 | Skripte wat `db/client.ts` invoer (`$app/server`) loop nie met `scripts/run.mjs` nie                                        | Gebruik net `createPrisma` in skripte; services en repos neem 'n laaste `db`/`client`-parameter, sodat toetse hul eie kliënt kan gee                                            |
 | Die blaaier hou soms 'n verouderde Vite-module in die kas (vreemde "x is not defined")                                      | Harde herlaai (Ctrl+Shift+R); dit is 'n dev-artefak, nie 'n kodefout nie                                                                                                        |
@@ -147,7 +151,7 @@ _Dienste en vakmanne word later 'n eie soort (`SERVICE`)._
 - Voordele: volledige TypeScript-tipes, die databasis dwing reëls af, gewone `JOIN`s en indekse vir filters, en maklike verslae.
 - Prys: 'n nuwe soort vereis 'n nuwe tabel en migrasie.
 
-### ✅ Gebou (migrasies `init`, `auth`, `profile`, `public_profile`, `listings`, `remove_drivers_licence`, `remove_worker_profile`)
+### ✅ Gebou (migrasies `init`, `auth`, `profile`, `public_profile`, `listings`, `remove_drivers_licence`, `remove_worker_profile`, `responses`)
 
 Sien `prisma/schema.prisma` vir die presiese velde. Opsomming:
 
@@ -165,6 +169,8 @@ Sien `prisma/schema.prisma` vir die presiese velde. Opsomming:
 | `ListingStatus` (enum)                       | `OPEN`, `CLOSED` (genoeg reaksies aanvaar), `COMPLETED`, `CANCELLED`                                                                                                                                                                                                            |
 | `Listing`                                    | Algemene plasing: `kind`, `ownerId`, `categoryId` (`RESTRICT`), `title`, `description`, `price` (vrye teks), `capacity` (`CHECK >= 1`), `location`, `startsAt`/`endsAt`/`closesAt`, `status`. Indekse: `[status, kind, categoryId]`, `[status, createdAt]`, `[ownerId, status]` |
 | `JobDetails`                                 | 1-tot-1 met `Listing` (`kind = JOB`): `jobType`. `@@index([jobType])`                                                                                                                                                                                                           |
+| `ResponseStatus` (enum)                      | `INTERESTED` (wag), `WITHDRAWN`, `ACCEPTED`, `DECLINED`                                                                                                                                                                                                                         |
+| `Response`                                   | `listingId`, `responderId` (`CASCADE`), `status`, `note` (≤300), `@@unique([listingId, responderId])`, indekse `[responderId, status]` en `[listingId, status]`. Migrasie `20261013100000_responses` (gedateer ná die twee vooruit-gedateerde)                                  |
 | `ProcessedRequest`                           | Idempotensie: `requestId` (PK), `userId`, `action`, `result` (JSON), `createdAt`                                                                                                                                                                                                |
 
 > **Verwyder in Fase 2:** `WorkerProfile` (rybewys en eie vervoer) is heeltemal uit die stelsel. 'n Plaser noem 'n vereiste soos 'n rybewys in die beskrywing. Die migrasies het die bestaande waardes uitgevee.
@@ -172,24 +178,8 @@ Sien `prisma/schema.prisma` vir die presiese velde. Opsomming:
 ### ⏳ Beplan
 
 ```prisma
-enum ResponseStatus   { INTERESTED WITHDRAWN ACCEPTED DECLINED }
 enum NotificationType { NEW_LISTING NEW_RESPONSE RESPONSE_ACCEPTED RESPONSE_DECLINED LISTING_CANCELLED }
 enum ReportStatus     { OPEN RESOLVED DISMISSED }
-
-// Fase 3
-model Response {
-  id          String         @id @default(cuid())
-  listingId   String
-  responderId String
-  listing     Listing        @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  responder   User           @relation(fields: [responderId], references: [id], onDelete: Cascade)
-  status      ResponseStatus @default(INTERESTED)
-  note        String?        @db.VarChar(300) // "Kan eers 09:00 begin"
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  @@unique([listingId, responderId])
-  @@index([responderId, status])
-}
 
 // Fase 4
 model PushSubscription { id, userId, endpoint @unique, p256dh, auth, device?, createdAt }
@@ -207,7 +197,7 @@ User *─* Category            via Interest (+ jare ervaring)              ✅
 User 1─* JobTypePreference                                               ✅
 User (plaser) 1─* Listing *─1 Category                                   ✅
 Listing 1─0..1 JobDetails     (later ServiceDetails, ProductDetails)     ✅
-Listing 1─* Response *─1 User (reageerder)                               ⏳ Fase 3
+Listing 1─* Response *─1 User (reageerder)                               ✅
 User 1─* ProcessedRequest                                            ✅
 User 1─* PushSubscription, Notification                                  ⏳ Fase 4
 Report → User en/of Listing                                              ⏳ Fase 6
@@ -248,14 +238,21 @@ Report → User en/of Listing                                              ⏳ F
   - **Datums:** `<input type="date">`, gestoor as Orania-tyd (`+02:00`, geen somertyd). "Reageer voor" duur tot 23:59:59 van daardie dag (`#lib/dates.ts`).
 - **Idempotensie** (`server/idempotency.ts`): `withRequestId(userId, requestId, action, fn)` open 'n transaksie, eis die `requestId` (`createMany` met `skipDuplicates`), voer `fn(tx)` uit en stoor die antwoord. 'n Herhaling kry die gestoorde antwoord (`replayed: true`); 'n fout rol die claim terug; dieselfde id vir 'n ander gebruiker of aksie gee 409. Alle skryfwerk in `fn` moet via `tx` gaan.
 
+- **Reaksies** (`responses.ts`, almal in `withRequestId`, onder `DB.response.lockListing` (advisory lock per plasing) sodat gelyktydige aanvaardings nie `capacity` oorskry nie):
+  - **`respond`:** opgestelde, ongeblokkeerde lid (`assertActiveMember` in `members.ts`); plasing `OPEN`; sperdatum nie verby nie; nie die eie plasing nie; plaser nie geblokkeer nie. `WITHDRAWN` word weer `INTERESTED`; `INTERESTED`/`ACCEPTED`/`DECLINED` gee 409 (afgewys kan nie weer reageer nie).
+  - **`withdraw`:** net eie reaksie; `INTERESTED|ACCEPTED → WITHDRAWN` terwyl die plasing `OPEN` of `CLOSED` is. Onttrek 'n **aanvaarde** reaksie van 'n `CLOSED` plasing, gaan dit weer `OPEN` (wie afgewys is, bly afgewys).
+  - **`acceptResponse` / `declineResponse`:** net die eienaar (404 anders), plasing `OPEN`, reaksie `INTERESTED`. Sodra `ACCEPTED` = `capacity`: plasing → `CLOSED` en die res van `INTERESTED` → `DECLINED`.
+  - **Kontak-sigbaarheid:** selnommer word net gelees (`DB.profile.findPhones`) vir die ander party van 'n `ACCEPTED`-reaksie, en gee `toContact()` (vertoonformaat, `tel:` en `https://wa.me/…`). Die reaksielyste (`DB.response.listForListing`/`listByResponder`) lees self nooit 'n foon nie.
+  - **Wysig-slot** (`listings.ts` `assertEditable`): ná die eerste nie-onttrekte reaksie is kategorie en werktipe gesluit (409). **Kapasiteit mag wissel, maar moet groter bly as die aantal aanvaardes** (400); dit is 'n bewuste afwyking van die oorspronklike plan, wat kapasiteit ook wou sluit.
+  - **Status-oorgange:** voltooi en kanselleer werk vanaf `OPEN` én `CLOSED`.
+  - **`getListing`** gee ook `acceptedCount`, `responseCount` (eienaar), `canRespond`, `myResponse` (met die plaser se kontak as aanvaar). 'n Nie-eienaar sien 'n nie-oop plasing net as hy self daarop gereageer het.
+- **Geleenthede** (`opportunities.ts`): oop plasings van ander (geen geblokkeerde plasers, verstreke sperdatums, of plasings waarop jy reeds gereageer het, behalwe onttrek). `matches` = kategorie in jou belangstellings én `kinds[kind].matchesPreferences(details, prefs)` (dieselfde reël as `matchFilter`, in die geheue; `job.spec.ts` toets dit). Pas eerste, dan nuutste. Hoogstens 100.
+- **Tuis** kry `waitingResponses` (reaksies wat op my besluit wag) en `myLiveResponses`. **Publieke profiel** kry `completedCount` ("N voltooi": aanvaarde reaksies op voltooide plasings, as reageerder en as plaser; net 'n getal).
+
 ### ⏳ Beplan
 
 - **Fase 4:** `createListing` stuur `notify(matching, NEW_LISTING)`, net as `replayed` onwaar is.
-- **respond** (Fase 3): die plasing is `OPEN`, die sperdatum is nie verby nie, en dit is nie die eie plasing nie.
-- **acceptResponse** (Fase 3, transaksie): net die eienaar. As die aantal `ACCEPTED` = `capacity`, word die plasing `CLOSED` en die oorblywende `INTERESTED` → `DECLINED`.
-- **cancelListing** (Fase 4): almal wat gereageer het, kry 'n kennisgewing.
-- **Kontak-sigbaarheid** (Fase 3): `phone` net as daar 'n `ACCEPTED`-reaksie tussen die twee is.
-- **Geskiedenis**: voltooide plasings waarvoor jy aanvaar is, op jou publieke profiel ("N voltooi").
+- **cancelListing/vol/aanvaar** (Fase 4): reageerders kry 'n kennisgewing (nuwe reaksie, aanvaar, afgewys, plasing gekanselleer).
 - **deleteAccount** (Fase 6, POPIA): `User` uitvee (cascade) **plus** die R2-foto's (die databasis weet nie van R2 nie).
 
 ---
@@ -274,10 +271,14 @@ src/
   lib/
     index.ts         getInitials()
     dates.ts         formatDate / toDateInput (Orania-tyd)
-    client/          resize-image.ts                       (blaaier: mediavoorbereiding)
-    components/      Avatar.svelte (geen groen nie; val terug op voorletters as die foto nie laai nie)  LegalPage.svelte  ListingForm.svelte
-    schemas/         fields.ts  auth.ts  onboarding.ts  profile.ts  listing.ts   (gedeelde Zod; *.spec.ts langsaan)
-    remote/          auth  categories  onboarding  profile  people  home  listings   (*.remote.ts)
+    client/          resize-image.ts  confirm.ts           (blaaier: mediavoorbereiding en confirmAction)
+    components/      Avatar  LegalPage  ListingForm (gesluit-velde ná reaksies)
+                     Button  Field  Card  Badge  Alert  EmptyState  ResponseBadge   (gedeelde UI; sien §2)
+                     Modal  ConfirmModal                                             (dialoë; sien §2)
+                     ListingView (een plasing, vir eienaar én ander)  ListingResponses (eienaar se reaksielys)  ContactCard
+    styles.ts        buttonClass(), inputClass
+    schemas/         fields.ts  auth.ts  onboarding.ts  profile.ts  listing.ts  response.ts   (gedeelde Zod; *.spec.ts langsaan)
+    remote/          auth  categories  onboarding  profile  people  home  listings  responses  opportunities   (*.remote.ts)
     server/
       auth.ts        Better Auth-instansie (lui, Proxy na prisma())
       background.ts  runInBackground (waitUntil)
@@ -290,8 +291,9 @@ src/
       storage.ts     photoBucket() (R2 via cloudflare:workers)
       db/            create.ts (createPrisma, Db-tipe)  client.ts (prisma())  index.ts (DB)
                      category  interest  job-type-preferences  listing  processed-request
-                     profile  qualification  rate-limit  user
+                     profile  qualification  rate-limit  response  user
       services/      onboarding  profile  people  photos  home  listings  matching
+                     members  responses  opportunities
                      kinds/{types,index,job}.ts
   routes/
     +layout.svelte   kopstrook, onderste balk (foon), laai-balk, voetstrook
@@ -299,13 +301,14 @@ src/
     (guest)/         teken-in  registreer (+ kyk-jou-e-pos)
     (onboarding)/    begin  begin/werker  begin/plaser
     (app)/           tuis  profiel  plasings  plasings/nuut  plasings/[id]  plasings/[id]/wysig
+                     geleenthede  geleenthede/[id]  my-reaksies
     mense/[id]       publieke profiel
     foto/[...key]    R2-aflewering (+server.ts)
     e-pos-bevestig  wagwoord-vergeet  wagwoord-herstel  privaatheid  terme  +error.svelte
 docs/PLAN.md
 ```
 
-**Beplan:** `responses`, `geleenthede/*` (Fase 3); `notifications`, `service-worker.ts` (Fase 4); `lib/offline/*` (Fase 5).
+**Beplan:** `notifications`, `service-worker.ts` (Fase 4); `lib/offline/*` (Fase 5).
 
 ---
 
@@ -318,10 +321,10 @@ docs/PLAN.md
 | `onboarding.remote.ts`                 | `getOnboardingOptions` (q), `completeWorkerOnboarding`, `completePosterOnboarding` (f)                                                                                                            | —                                                                                                                               |
 | `profile.remote.ts`                    | `getMyProfile` (q); `updateAbout`, `updateInterests`, `updateJobPreferences`, `addQualification`, `uploadPhoto` (f); `setAvailable`, `setPublicProfile`, `removeQualification`, `removePhoto` (c) | `deleteAccount` (Fase 6)                                                                                                        |
 | `people.remote.ts`                     | `getPublicProfile` (q, sonder aanmelding)                                                                                                                                                         | —                                                                                                                               |
-| `home.remote.ts`                       | `getHome` (q)                                                                                                                                                                                     | Uitbrei met geleenthede                                                                                                         |
+| `home.remote.ts`                       | `getHome` (q; ook `waitingResponses`, `myLiveResponses`)                                                                                                                                          | —                                                                                                                               |
 | `listings.remote.ts`                   | `getMyListings`, `getListing`, `getListingForEdit`, `estimateRecipients` (q); `saveListing` (f, skep of wysig); `cancelListing`, `completeListing` (c)                                            | —                                                                                                                               |
-| `opportunities.remote.ts`              | —                                                                                                                                                                                                 | `getOpportunities`, `getOpportunity` (q)                                                                                        |
-| `responses.remote.ts`                  | —                                                                                                                                                                                                 | `respond` (f), `withdraw`, `acceptResponse` (c), `getMyResponses` (q)                                                           |
+| `opportunities.remote.ts`              | `getOpportunities` (q); 'n enkele plasing is `getListing`                                                                                                                                         | —                                                                                                                               |
+| `responses.remote.ts`                  | `getMyResponses`, `getResponsesForListing` (q); `respond` (f; 400 en 409 word `invalid()`); `withdraw`, `acceptResponse`, `declineResponse` (c; verfris `getListing` en die lys op die bediener)  | —                                                                                                                               |
 | `notifications.remote.ts`              | —                                                                                                                                                                                                 | `getNotifications`, `getUnreadCount`, `getVapidPublicKey` (q); `markRead`, `savePushSubscription`, `removePushSubscription` (c) |
 | `reports.remote.ts`, `admin.remote.ts` | —                                                                                                                                                                                                 | Fase 6                                                                                                                          |
 
@@ -340,26 +343,26 @@ docs/PLAN.md
   - `(app)`: nie aangemeld → `/teken-in?na=…`; nie opgestel → `/begin`.
   - Geen groep: publiek. `/` stuur aangemelde gebruikers na `/tuis`.
   - **Kliënt-navigasie:** sonder 'n bediener-`load` vra die kliënt die bediener nie en loop die wag nie. Daarom het `/` (`+page.server.ts`) en elke groep (`+layout.server.ts`) 'n leë `load`.
-- **Navigasie:** kopstrook (avatar + naam, Teken uit) en op die foon 'n onderste balk. Tans **Tuis · Plasings · Profiel**; _Geleenthede_ en _Kennisgewings_ word bygevoeg soos hulle gebou word. Laai-balk via `navigating`. Voetstrook: Privaatheid · Terme · Kontak.
+- **Navigasie:** kopstrook (avatar + naam, Teken uit) en op die foon 'n onderste balk. Tans **Tuis · Geleenthede · Plasings · Profiel**; _Kennisgewings_ kom in Fase 4. Vier items op die foonbalk is dalk benoud; kyk by die herontwerp. Laai-balk via `navigating`. Voetstrook: Privaatheid · Terme · Kontak.
 
 ### Roetes
 
-| Roete                                                                   | Stand     | Inhoud                                                                                                                                                                     |
-| ----------------------------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                                                                     | ✅        | Voorblad: wat Dorpsplein is, twee keuses (_Ek soek werk_ / _Ek soek mense_), drie stappe, kategorieë                                                                       |
-| `/teken-in`, `/registreer`, `/registreer/kyk-jou-e-pos`                 | ✅        | E-pos + wagwoord of Google                                                                                                                                                 |
-| `/e-pos-bevestig`, `/wagwoord-vergeet`, `/wagwoord-herstel`             | ✅        | Verifikasie- en herstelvloei                                                                                                                                               |
-| `/begin`, `/begin/werker`, `/begin/plaser`                              | ✅        | Keuse (of reguit na die vorm). Werker: selnommer, opskrif, kategorieë, werktipes, POPIA. Plaser: selnommer en POPIA                                                        |
-| `/tuis`                                                                 | ✅        | Groet; werker: "Oop vir werk"-kaart met skakelaar, profiel-voltooiingslys, deel jou profiel; plaser: "Wil jy ook werk kry?"; "Jou plasings"                                |
-| `/profiel`                                                              | ✅        | Foto · beskikbaar · publiek · oor my · belangstellings (+ jare) · werktipes · kwalifikasies (ankers `#foto`, `#oor-my`, `#belangstellings`, `#kwalifikasies`)              |
-| `/mense/[id]`                                                           | ✅        | Publieke profiel; groen "Oop vir werk"-kaart en kolletjie net vir werkers wat beskikbaar is (groen = net beskikbaarheid)                                                   |
-| `/privaatheid`, `/terme`                                                | ✅ konsep | POPIA-beleid (Tertius van Niekerk, privaat@dorpsplein.co.za); terme (18+). Moet nog regsnagesien word                                                                      |
-| `/foto/[...key]`                                                        | ✅        | R2-aflewering                                                                                                                                                              |
-| `/plasings`, `/plasings/nuut`, `/plasings/[id]`, `/plasings/[id]/wysig` | ✅        | My plasings (oop en afgehandel); vorm met regstreekse "± N mense sal kennisgewing kry"; `/plasings/[id]` vir enige aangemelde lid (eienaar kry Wysig, Voltooi, Kanselleer) |
-| `/geleenthede`, `/geleenthede/[id]`, `/my-reaksies`                     | ⏳ Fase 3 | Passende plasings; Ek is beskikbaar / Onttrek; kontak ná aanvaarding                                                                                                       |
-| `/kennisgewings`, `/installeer`                                         | ⏳ Fase 4 | Inkassie; PWA-installasiegids                                                                                                                                              |
-| `/uitkassie`, `/vanlyn`                                                 | ⏳ Fase 5 | Wagtende/verwerpte aksies; vanlyn-terugval                                                                                                                                 |
-| `/admin/*`, `/geblokkeer`                                               | ⏳ Fase 6 | Statistiek, rapporte, gebruikers, kategorieë                                                                                                                               |
+| Roete                                                                   | Stand     | Inhoud                                                                                                                                                                                                                            |
+| ----------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                                                                     | ✅        | Voorblad: wat Dorpsplein is, twee keuses (_Ek soek werk_ / _Ek soek mense_), drie stappe, kategorieë                                                                                                                              |
+| `/teken-in`, `/registreer`, `/registreer/kyk-jou-e-pos`                 | ✅        | E-pos + wagwoord of Google                                                                                                                                                                                                        |
+| `/e-pos-bevestig`, `/wagwoord-vergeet`, `/wagwoord-herstel`             | ✅        | Verifikasie- en herstelvloei                                                                                                                                                                                                      |
+| `/begin`, `/begin/werker`, `/begin/plaser`                              | ✅        | Keuse (of reguit na die vorm). Werker: selnommer, opskrif, kategorieë, werktipes, POPIA. Plaser: selnommer en POPIA                                                                                                               |
+| `/tuis`                                                                 | ✅        | Groet; werker: "Oop vir werk"-kaart met skakelaar, profiel-voltooiingslys, deel jou profiel; plaser: "Wil jy ook werk kry?"; "Jou plasings"                                                                                       |
+| `/profiel`                                                              | ✅        | Foto · beskikbaar · publiek · oor my · belangstellings (+ jare) · werktipes · kwalifikasies (ankers `#foto`, `#oor-my`, `#belangstellings`, `#kwalifikasies`)                                                                     |
+| `/mense/[id]`                                                           | ✅        | Publieke profiel; groen "Oop vir werk"-kaart en kolletjie net vir werkers wat beskikbaar is (groen = net beskikbaarheid)                                                                                                          |
+| `/privaatheid`, `/terme`                                                | ✅ konsep | POPIA-beleid (Tertius van Niekerk, privaat@dorpsplein.co.za); terme (18+). Moet nog regsnagesien word                                                                                                                             |
+| `/foto/[...key]`                                                        | ✅        | R2-aflewering                                                                                                                                                                                                                     |
+| `/plasings`, `/plasings/nuut`, `/plasings/[id]`, `/plasings/[id]/wysig` | ✅        | My plasings (oop en afgehandel); vorm met regstreekse "± N mense sal kennisgewing kry"; `/plasings/[id]` vir enige aangemelde lid (eienaar kry Wysig, Voltooi, Kanselleer)                                                        |
+| `/geleenthede`, `/geleenthede/[id]`, `/my-reaksies`                     | ✅        | Oop plasings, "Pas by jou" eerste; Ek is beskikbaar / Onttrek; kontak (bel en WhatsApp) ná aanvaarding. `/geleenthede/[id]` en `/plasings/[id]` gebruik dieselfde `ListingView`; die eienaar kry Aanvaar/Wys af en die reaksielys |
+| `/kennisgewings`, `/installeer`                                         | ⏳ Fase 4 | Inkassie; PWA-installasiegids                                                                                                                                                                                                     |
+| `/uitkassie`, `/vanlyn`                                                 | ⏳ Fase 5 | Wagtende/verwerpte aksies; vanlyn-terugval                                                                                                                                                                                        |
+| `/admin/*`, `/geblokkeer`                                               | ⏳ Fase 6 | Statistiek, rapporte, gebruikers, kategorieë                                                                                                                                                                                      |
 
 ### Hoofvloei (teiken)
 
@@ -417,6 +420,7 @@ Playwright met `context.setOffline(true)`; Vitest vir `withRequestId()`; konflik
   3. Ek bou, voer `check` + `lint` uit, en **toets in die ingeboude blaaier** teen `npm run dev` (en `npm run preview` vir Cloudflare-spesifieke goed), met tydelike toetsgebruikers wat ek daarna uitvee.
   4. Ek commit **nie**; jy hersien en commit.
 - **Taal:** gesprek en UI in Afrikaans; kode-identifiseerders in Engels.
+- **Node:** loop `source ~/.nvm/nvm.sh && nvm use` voor `npm`/`npx` (die terminaal se verstek is Node 18).
 
 ---
 
@@ -464,12 +468,34 @@ SvelteKit 3 + TS + Tailwind; Neon (`main`/`dev`); Prisma 7 met die WASM-plugin; 
 
 ✅ **Gespeel:** plasings met verskillende kategorieë en tipes geskep, "± N mense" het verander, en die sigbaarheid vir 'n tweede lid is getoets. Vrygestel op produksie.
 
-### ⏳ Fase 3 — Reaksies en aanvaarding
+### ✅ Fase 3 — Reaksies en aanvaarding
 
-`Response`, `responses.ts`, `/geleenthede/*`, `/my-reaksies`, aanvaarding met sluit-logika, kontak-deling, profielgeskiedenis ("N voltooi"), nav-item _Geleenthede_.
+| Stap | Wat                                                                                                                                                                                                                      | Stand                                                       |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| 3.1  | Skema: `ResponseStatus`, `Response`; migrasie `20261013100000_responses` (toegepas op Neon `dev`)                                                                                                                        | ✅                                                          |
+| 3.2  | Repo `db/response.ts` (slot per plasing, oorgange met tel-rye, witlys-selects, `countCompletedForUser`); `DB.listing.transition` neem 'n lys, `transitionById`, `findById`, `listOpenForMember`; `DB.profile.findPhones` | ✅                                                          |
+| 3.3  | `schemas/response.ts` (`respondSchema`, `responseActionSchema`) + spec                                                                                                                                                   | ✅                                                          |
+| 3.4  | `services/responses.ts`, `members.ts`; `listings.ts` (wysig-slot, status vanaf `CLOSED`, uitgebreide `getListing`); `home.ts`                                                                                            | ✅                                                          |
+| 3.5  | `opportunities.ts`; `kinds.JOB.matchesPreferences`                                                                                                                                                                       | ✅                                                          |
+| 3.6  | `responses.remote.ts`, `opportunities.remote.ts`                                                                                                                                                                         | ✅                                                          |
+| 3.7  | Bladsye en komponente (`/geleenthede`, `/geleenthede/[id]`, `/my-reaksies`, `ListingView`, `ListingResponses`, nav, `/tuis`, "N voltooi"); `Modal`/`confirmAction`; gedeelde UI-komponente en `styles.ts`                | ✅ gebou; ✋ nie in die blaaier gesien nie (herontwerp kom) |
+| 3.8  | Vitest teen Neon `dev`: `responses.spec.ts` (18 toetse: respond, aanvaar en sluit, gelyktydige aanvaarding, onttrek en heropen, wysig-slot, privaatheid, `toContact`), `response.spec.ts`, `job.spec.ts`                 | ✅ (Playwright-e2e en blaaiertoets bewus oorgeslaan)        |
+| 3.9  | `docs/PLAN.md` bygewerk; vrygestel op produksie                                                                                                                                                                          | ✅                                                          |
 
-**Vir hierdie fase onthou:** sluit wysig van kategorie, werktipe en kapasiteit sodra iemand reageer (kapasiteit mag nie onder die aantal `ACCEPTED` daal nie). `/plasings/[id]` wys reeds 'n plasing aan enige lid, dus kan `/geleenthede/[id]` dit hergebruik of daarna verwys. Laat `createListing` se kennisgewing net by `replayed === false` gaan.
-✅ **Speel:** 'n plasing vir 2 mense kry 3 reaksies; aanvaar 2 → "Gesluit", die derde kry "afgewys". Playwright-toets.
+**Besluite:**
+
+- **`/geleenthede`:** alle oop plasings van ander; dié wat pas (belangstelling + werktipe) kom eerste met "Pas by jou". Plasings waarop jy reeds gereageer het (behalwe onttrek), word nie gewys nie; dié is op `/my-reaksies`.
+- **Kontak:** ná aanvaarding sien albei kante mekaar se selnommer (bel en WhatsApp). Nooit e-pos nie.
+- **Toestandsmasjien:** `INTERESTED → ACCEPTED|DECLINED` (plaser), `INTERESTED|ACCEPTED → WITHDRAWN` (reageerder), `WITHDRAWN → INTERESTED`. 'n Aanvaarding kan nie deur die plaser ongedaan gemaak word nie; 'n afgewysde kan nie weer reageer nie.
+- **Wysig:** kategorie en werktipe sluit by die eerste reaksie; kapasiteit mag wissel maar moet groter bly as die aantal aanvaardes.
+
+**Bekende randgevalle:** (1) Onttrek 'n aanvaarde reageerder ná die sperdatum, word die plasing weer `OPEN` maar niemand kan reageer nie (dit wys "Oop" sonder dat dit werklik oop is). (2) Reageerders kry nog geen kennisgewing nie (Fase 4). (3) `/geleenthede` is gelimiet tot 100 plasings, sonder bladsynommers.
+
+#### Wat nog oor is
+
+1. **Seed:** `prisma/seed-people.ts` het nog geen reaksies nie; brei dit uit sodat `dev` data het.
+2. **Blaaiertoets** (ná die herontwerp): speel die scenario "'n plasing vir 2 mense kry 3 reaksies; aanvaar 2 → Gesluit, die derde kry afgewys"; kontak sigbaar net by aanvaarding; onttrek van 'n aanvaarde heropen die plasing; wysig-slot; die modals (`confirmAction`) en die reageer-vorm (is die `requestId` ná 'n onttrekking vars?). Voeg dan 'n Playwright-toets by.
+3. Reaksie-toetse duur ±190 s (Neon `dev` is stadig); loop dit alleen: `npx vitest run src/lib/server/services/responses.spec.ts`.
 
 ### ⏳ Fase 4 — Kennisgewings
 
@@ -500,10 +526,9 @@ Regsnasiening van `/privaatheid` en `/terme`, outomatiese migrasies by ontplooii
 - `npm run check` en `npm run lint` ná elke stap.
 - **Blaaiertoets** van elke stap teen `npm run dev` (tydelike toetsgebruikers via skripte in die scratchpad, daarna uitgevee); Cloudflare-spesifieke goed (bindings, `waitUntil`) ook in `npm run preview`.
 - **Nog te doen:**
-  - **Gedoen:** Vitest vir `matching`, `idempotency`, `listings`, `schemas/listing`, `schemas/onboarding` en `jobKind`. Databasistoetse loop teen Neon `dev`.
+  - **Gedoen:** Vitest vir `matching`, `idempotency`, `listings`, `responses`, `schemas/listing`, `schemas/response`, `schemas/onboarding` en `jobKind`. Databasistoetse loop teen Neon `dev`.
   - **Nog te doen:** Vitest vir `getInitials`, `displayName`, `formatPhone`, `detectImageType`, `safeRedirect` (suiwer funksies). Die voorbeeldtoets in `src/lib/vitest-examples/` kan weg.
   - `getListing`/`getMyListings` het geen Vitest-toets nie (hulle gebruik `prisma()` en vereis 'n versoek); net die blaaier het hulle gedek.
   - Klein oop punte: `App.Platform` in `src/app.d.ts` word nie gebruik nie; `getInitials` het nog nie 'n eksplisiete terugkeertipe nie; Neon `dev` het 'n kategorie "Anders" naas "Ander"; die `seed-`-mense (`db:seed:people`) bly op `dev`.
-  - `src/routes/page.svelte.e2e.ts` faal plaaslik, want die opskrif bevat die omgewing-kenteken ("Dorpsplein local"); gebruik `toContainText`.
-  - Playwright e2e vir die hoofvloei vanaf Fase 3, en vanlyn-scenario's vanaf Fase 5.
+  - Playwright e2e vir die hoofvloei (Fase 3 se scenario is nog nie geskryf nie; wag vir die herontwerp), en vanlyn-scenario's vanaf Fase 5.
 - Elke fase word op `dev.dorpsplein.co.za` en op 'n foon getoets voor `master`.
