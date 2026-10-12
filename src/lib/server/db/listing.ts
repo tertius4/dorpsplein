@@ -1,6 +1,6 @@
 import { prisma } from './client.ts';
 import type { Db } from './create.ts';
-import type { JobType, ListingKind, ListingStatus } from './generated/client.ts';
+import type { ListingKind, ListingStatus } from './generated/client.ts';
 
 export interface ListingInput {
 	kind: ListingKind;
@@ -15,26 +15,10 @@ export interface ListingInput {
 	closesAt: Date | null;
 }
 
-export interface JobDetailsInput {
-	jobType: JobType;
-	requiresDriversLicence: boolean;
-}
-
 export const listing = {
-	/** Skep die plasing saam met sy werk-detail in een skryfopdrag. */
-	createJob: async (
-		ownerId: string,
-		data: ListingInput,
-		job: JobDetailsInput,
-		db: Db = prisma()
-	) => {
-		const listing = await db.listing.create({
-			data: { ...data, ownerId, job: { create: job } },
-			select: { id: true }
-		});
-
-		return listing;
-	},
+	/** Skep net die algemene deel; die soort se `createDetails` skryf die detail in dieselfde transaksie. */
+	create: (ownerId: string, data: ListingInput, db: Db = prisma()) =>
+		db.listing.create({ data: { ...data, ownerId }, select: { id: true } }),
 
 	/** Eienaarskap in die navraag (IDOR): 'n ander gebruiker se plasing gee `null`. */
 	findByIdForOwner: async (id: string, ownerId: string, db: Db = prisma()) => {
@@ -74,7 +58,7 @@ export const listing = {
 			orderBy: [{ createdAt: 'desc' }]
 		});
 	},
-	
+
 	countOpenByOwner: async (ownerId: string, db: Db = prisma()) => {
 		const listing_count = await db.listing.count({ where: { ownerId, status: 'OPEN' } });
 		return listing_count;
@@ -85,16 +69,9 @@ export const listing = {
 		id: string,
 		ownerId: string,
 		data: Omit<ListingInput, 'kind'>,
-		job: JobDetailsInput | null,
 		db: Db = prisma()
 	) => {
-		const { count } = await db.listing.updateMany({
-			where: { id, ownerId, status: 'OPEN' },
-			data
-		});
-		if (count === 1 && job) {
-			await db.jobDetails.update({ where: { listingId: id }, data: job });
-		}
+		const { count } = await db.listing.updateMany({ where: { id, ownerId, status: 'OPEN' }, data });
 		return count;
 	},
 
