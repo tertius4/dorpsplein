@@ -4,10 +4,10 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider      = "prisma-client"
-  output        = "../src/lib/server/db/generated"
-  runtime       = "workerd"
-  moduleFormat  = "esm"
+  provider     = "prisma-client"
+  output       = "../src/lib/server/db/generated"
+  runtime      = "workerd"
+  moduleFormat = "esm"
 }
 
 datasource db {
@@ -18,15 +18,24 @@ enum ListingKind {
   JOB
 }
 
+/// CLOSED = genoeg reaksies aanvaar.
+enum ListingStatus {
+  OPEN
+  CLOSED
+  COMPLETED
+  CANCELLED
+}
+
 model Category {
-  id        Int           @id @default(autoincrement())
+  id        Int         @id @default(autoincrement())
   kind      ListingKind
   name      String
   icon      String?
-  sortOrder Int           @default(0)
-  active    Boolean       @default(true)
+  sortOrder Int         @default(0)
+  active    Boolean     @default(true)
 
   interests Interest[]
+  listings  Listing[]
 
   @@unique([kind, name])
 }
@@ -34,21 +43,23 @@ model Category {
 // ---------- Better Auth ----------
 
 model User {
-  id            String    @id
+  id            String   @id
   name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  email         String   @unique
+  emailVerified Boolean  @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  sessions       Session[]
-  accounts       Account[]
-  profile        Profile?
-  workerProfile  WorkerProfile?
-  interests      Interest[]
-  jobTypePrefs   JobTypePreference[]
-  qualifications Qualification[]
+  sessions          Session[]
+  accounts          Account[]
+  profile           Profile?
+  workerProfile     WorkerProfile?
+  interests         Interest[]
+  jobTypePrefs      JobTypePreference[]
+  qualifications    Qualification[]
+  listings          Listing[]
+  processedRequests ProcessedRequest[]
 }
 
 /// 'n Aangemelde toestel. Die koekie bevat `token`.
@@ -79,7 +90,7 @@ model Account {
   accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
   scope                 String?
-  password              String?                // hash, nooit die wagwoord self nie
+  password              String? // hash, nooit die wagwoord self nie
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
@@ -112,15 +123,15 @@ model RateLimit {
 model Profile {
   userId         String    @id
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  headline       String?   @db.VarChar(80)   // "Ervare messelaar en teëlwerker"
+  headline       String?   @db.VarChar(80) // "Ervare messelaar en teëlwerker"
   bio            String?   @db.VarChar(1000)
-  photoKey       String?                     // R2-sleutel; val terug op User.image
-  phone          String?   @db.VarChar(20)   // net gedeel ná ACCEPTED
-  available      Boolean   @default(true)    // af = geen nuwe-plasing-kennisgewings
-  publicProfile  Boolean   @default(true)    // af = net aangemelde lede sien /mense/[id]
+  photoKey       String? // R2-sleutel; val terug op User.image
+  phone          String?   @db.VarChar(20) // net gedeel ná ACCEPTED
+  available      Boolean   @default(true) // af = geen nuwe-plasing-kennisgewings
+  publicProfile  Boolean   @default(true) // af = net aangemelde lede sien /mense/[id]
   isAdmin        Boolean   @default(false)
   blocked        Boolean   @default(false)
-  popiaConsentAt DateTime?                   // null = /begin nog nie voltooi
+  popiaConsentAt DateTime? // null = /begin nog nie voltooi
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 }
@@ -175,4 +186,55 @@ model JobTypePreference {
 
   @@id([userId, jobType])
   @@index([jobType])
+}
+
+// ---------- Plasings (algemeen + detail per soort) ----------
+
+/// 'n Plasing van enige soort. Soort-spesifieke velde is in 'n 1-tot-1 detailtabel (bv. `JobDetails`).
+model Listing {
+  id          String        @id @default(cuid())
+  kind        ListingKind
+  ownerId     String
+  owner       User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  categoryId  Int
+  category    Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  title       String        @db.VarChar(100)
+  description String?       @db.VarChar(2000)
+  price       String?       @db.VarChar(100) // vrye teks: "R300 per dag"
+  capacity    Int           @default(1) // hoeveel reaksies aanvaar kan word (CHECK >= 1)
+  location    String?       @db.VarChar(120)
+  startsAt    DateTime?
+  endsAt      DateTime?
+  closesAt    DateTime? // sperdatum vir reaksies
+  status      ListingStatus @default(OPEN)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  job JobDetails?
+
+  @@index([status, kind, categoryId])
+  @@index([status, createdAt])
+  @@index([ownerId, status])
+}
+
+/// 1-tot-1 met `Listing` (kind = JOB).
+model JobDetails {
+  listingId              String  @id
+  listing                Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  jobType                JobType
+  requiresDriversLicence Boolean @default(false)
+
+  @@index([jobType])
+}
+
+/// Idempotensie: 'n `requestId` (UUID van die kliënt) word net een keer verwerk. Ou rye word ná 30 dae opgeruim.
+model ProcessedRequest {
+  requestId String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String
+  result    Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }

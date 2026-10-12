@@ -3,6 +3,7 @@ import { prisma } from './client.ts';
 import type { Transaction } from './create.ts';
 import { interest } from './interest.ts';
 import { jobTypePreference } from './job-type-preferences.ts';
+import { listing } from './listing.ts';
 import { profile } from './profile.ts';
 import { qualification } from './qualification.ts';
 import { rateLimit } from './rate-limit.ts';
@@ -13,6 +14,7 @@ export const DB = {
 	category,
 	interest,
 	jobTypePreference,
+	listing,
 	profile,
 	qualification,
 	rateLimit,
