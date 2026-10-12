@@ -54,7 +54,6 @@ model User {
   sessions          Session[]
   accounts          Account[]
   profile           Profile?
-  workerProfile     WorkerProfile?
   interests         Interest[]
   jobTypePrefs      JobTypePreference[]
   qualifications    Qualification[]
@@ -171,14 +170,6 @@ enum JobType {
   SEASONAL
 }
 
-model WorkerProfile {
-  userId         String   @id
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  driversLicence Boolean  @default(false)
-  ownTransport   Boolean  @default(false)
-  updatedAt      DateTime @updatedAt
-}
-
 model JobTypePreference {
   userId  String
   jobType JobType
@@ -222,7 +213,6 @@ model JobDetails {
   listingId              String  @id
   listing                Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
   jobType                JobType
-  requiresDriversLicence Boolean @default(false)
 
   @@index([jobType])
 }

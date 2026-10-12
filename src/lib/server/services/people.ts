@@ -58,8 +58,6 @@ export async function getPublicProfile(userId: string, viewerId: string | null) 
 		headline: profile.headline,
 		bio: profile.bio,
 		available: profile.available,
-		driversLicence: user.workerProfile?.driversLicence ?? false,
-		ownTransport: user.workerProfile?.ownTransport ?? false,
 		interests: user.interests.map((i) => ({
 			name: i.category.name,
 			icon: i.category.icon,

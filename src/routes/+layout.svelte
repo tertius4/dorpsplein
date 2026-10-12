@@ -9,12 +9,14 @@
 	let { children }: LayoutProps = $props();
 	const user = $derived(await getCurrentUser());
 
-	/** Net bladsye wat bestaan; Geleenthede, Plasings en Kennisgewings kom in Fase 2–4. */
+	/** Net bladsye wat bestaan; Geleenthede en Kennisgewings kom in Fase 3–4. */
 	const NAV = [
 		{ href: '/tuis', label: 'Tuis', icon: '🏠' },
+		{ href: '/plasings', label: 'Plasings', icon: '📋' },
 		{ href: '/profiel', label: 'Profiel', icon: '👤' }
 	];
-	const isActive = (href: string) => page.url.pathname === href;
+	const isActive = (href: string) =>
+		page.url.pathname === href || page.url.pathname.startsWith(`${href}/`);
 </script>
 
 <svelte:head>

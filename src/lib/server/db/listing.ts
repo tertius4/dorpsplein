@@ -1,5 +1,5 @@
 import { prisma } from './client.ts';
-import type { Db } from './create.ts';
+import type { Db, Transaction } from './create.ts';
 import type { ListingKind, ListingStatus } from './generated/client.ts';
 
 export interface ListingInput {
@@ -57,6 +57,14 @@ export const listing = {
 			include: { category: { select: { name: true, icon: true } }, job: true },
 			orderBy: [{ createdAt: 'desc' }]
 		});
+	},
+
+	/**
+	 * Sluit "plaas 'n plasing" per eienaar vir die duur van die transaksie, sodat twee
+	 * gelyktydige versoeke nie albei die limiet van oop plasings kan omseil nie.
+	 */
+	lockOwner: async (ownerId: string, tx: Transaction) => {
+		await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${ownerId}))`;
 	},
 
 	countOpenByOwner: async (ownerId: string, db: Db = prisma()) => {

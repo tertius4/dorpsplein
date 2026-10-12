@@ -17,7 +17,6 @@ describe.skipIf(!process.env.DATABASE_URL)('passing (Neon dev)', () => {
 		o: {
 			categories: number[];
 			jobTypes: JobType[];
-			licence?: boolean;
 			available?: boolean;
 			blocked?: boolean;
 			consent?: boolean;
@@ -36,7 +35,6 @@ describe.skipIf(!process.env.DATABASE_URL)('passing (Neon dev)', () => {
 						blocked: o.blocked ?? false
 					}
 				},
-				workerProfile: { create: { driversLicence: o.licence ?? false } },
 				interests: { create: o.categories.map((categoryId) => ({ categoryId })) },
 				jobTypePrefs: { create: o.jobTypes.map((jobType) => ({ jobType })) }
 			}
@@ -50,29 +48,25 @@ describe.skipIf(!process.env.DATABASE_URL)('passing (Neon dev)', () => {
 		[konstruksie, tuin] = await Promise.all([find('Konstruksie'), find('Tuin')]);
 
 		await Promise.all([
-			person('pas', { categories: [konstruksie], jobTypes: ['ODD_JOB'], licence: true }),
-			person('geenRybewys', { categories: [konstruksie], jobTypes: ['ODD_JOB'] }),
-			person('anderKategorie', { categories: [tuin], jobTypes: ['ODD_JOB'], licence: true }),
-			person('anderTipe', { categories: [konstruksie], jobTypes: ['SEASONAL'], licence: true }),
+			person('pas', { categories: [konstruksie], jobTypes: ['ODD_JOB'] }),
+			person('anderKategorie', { categories: [tuin], jobTypes: ['ODD_JOB'] }),
+			person('anderTipe', { categories: [konstruksie], jobTypes: ['SEASONAL'] }),
 			person('nietBeskikbaar', {
 				categories: [konstruksie],
 				jobTypes: ['ODD_JOB'],
-				licence: true,
 				available: false
 			}),
 			person('geblokkeer', {
 				categories: [konstruksie],
 				jobTypes: ['ODD_JOB'],
-				licence: true,
 				blocked: true
 			}),
 			person('geenToestemming', {
 				categories: [konstruksie],
 				jobTypes: ['ODD_JOB'],
-				licence: true,
 				consent: false
 			}),
-			person('plaser', { categories: [konstruksie], jobTypes: ['ODD_JOB'], licence: true })
+			person('plaser', { categories: [konstruksie], jobTypes: ['ODD_JOB'] })
 		]);
 	}, 60_000);
 
@@ -89,9 +83,6 @@ describe.skipIf(!process.env.DATABASE_URL)('passing (Neon dev)', () => {
 		...o
 	});
 
-	const withLicence = (): MatchInput =>
-		input({ details: { jobType: 'ODD_JOB', requiresDriversLicence: true } });
-
 	/** Net ons eie toetsmense; jou ware dev-gebruikers kan ook pas. */
 	const matched = async (i: MatchInput) =>
 		(
@@ -104,11 +95,7 @@ describe.skipIf(!process.env.DATABASE_URL)('passing (Neon dev)', () => {
 			.sort();
 
 	it('pas by kategorie en werktipe', async () => {
-		expect(await matched(input())).toEqual(['geenRybewys', 'pas', 'plaser']);
-	});
-
-	it('vereis ’n rybewys as die plasing dit vra', async () => {
-		expect(await matched(withLicence())).toEqual(['pas', 'plaser']);
+		expect(await matched(input())).toEqual(['pas', 'plaser']);
 	});
 
 	it('pas net by die kategorie van die plasing', async () => {
@@ -120,19 +107,17 @@ describe.skipIf(!process.env.DATABASE_URL)('passing (Neon dev)', () => {
 	});
 
 	it('sluit nie-beskikbaar, geblokkeer en onopgestelde mense uit', async () => {
-		for (const i of [input(), withLicence()]) {
-			const found = await matched(i);
-			for (const out of ['nietBeskikbaar', 'geblokkeer', 'geenToestemming']) {
-				expect(found).not.toContain(out);
-			}
+		const found = await matched(input());
+		for (const out of ['nietBeskikbaar', 'geblokkeer', 'geenToestemming']) {
+			expect(found).not.toContain(out);
 		}
 	});
 
 	it('sluit die plaser self uit', async () => {
-		expect(await matched(input({ ownerId: PREFIX + 'plaser' }))).toEqual(['geenRybewys', 'pas']);
+		expect(await matched(input({ ownerId: PREFIX + 'plaser' }))).toEqual(['pas']);
 	});
 
 	it('estimateRecipients tel minstens ons toetsmense', async () => {
-		expect(await estimateRecipients(input(), db)).toBeGreaterThanOrEqual(3);
+		expect(await estimateRecipients(input(), db)).toBeGreaterThanOrEqual(2);
 	});
 });

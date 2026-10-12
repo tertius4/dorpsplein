@@ -16,11 +16,6 @@ export async function completeOnboarding(userId: string, input: OnboardingInput)
 		);
 		await DB.interest.replaceForUser(userId, input.categoryIds, tx);
 		await DB.jobTypePreference.replaceForUser(userId, input.jobTypes, tx);
-		await DB.workerProfile.upsert(
-			userId,
-			{ driversLicence: input.driversLicence ?? false, ownTransport: input.ownTransport ?? false },
-			tx
-		);
 	});
 
 	markOnboarded(userId);

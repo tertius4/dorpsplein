@@ -16,25 +16,18 @@ export const jobKind = {
 
 	createDetails: async (tx, listingId, d) => {
 		await tx.jobDetails.create({
-			data: {
-				listingId,
-				jobType: d.jobType,
-				requiresDriversLicence: d.requiresDriversLicence ?? false
-			}
+			data: { listingId, jobType: d.jobType }
 		});
 	},
 
 	updateDetails: async (tx, listingId, d) => {
 		await tx.jobDetails.update({
 			where: { listingId },
-			data: { jobType: d.jobType, requiresDriversLicence: d.requiresDriversLicence ?? false }
+			data: { jobType: d.jobType }
 		});
 	},
 
-	matchFilter: (d) => ({
-		jobTypePrefs: { some: { jobType: d.jobType } },
-		...(d.requiresDriversLicence && { workerProfile: { is: { driversLicence: true } } })
-	}),
+	matchFilter: (d) => ({ jobTypePrefs: { some: { jobType: d.jobType } } }),
 
 	label: { singular: 'Werk', plural: 'Werk', respond: 'Ek is beskikbaar' }
 } satisfies KindModule<JobDetailsInput>;

@@ -258,17 +258,6 @@
 				<p class="text-sm text-red-700">{issue.message}</p>
 			{/each}
 
-			<div class="space-y-2">
-				<label class="flex items-center gap-2">
-					<input {...work.driversLicence.as('checkbox', me.driversLicence)} />
-					<span>Ek het ’n rybewys</span>
-				</label>
-				<label class="flex items-center gap-2">
-					<input {...work.ownTransport.as('checkbox', me.ownTransport)} />
-					<span>Ek het eie vervoer</span>
-				</label>
-			</div>
-
 			{#each work.issues() ?? [] as issue (issue.message)}
 				<p class="text-sm text-red-700">{issue.message}</p>
 			{/each}

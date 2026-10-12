@@ -16,7 +16,6 @@ async function person(
 	data: {
 		categories: number[];
 		jobTypes: ('ODD_JOB' | 'SEASONAL' | 'PERMANENT')[];
-		licence?: boolean;
 		available?: boolean;
 	}
 ) {
@@ -27,7 +26,6 @@ async function person(
 			email: `${name.toLowerCase().replace(/\s/g, '.')}${TEST_DOMAIN}`,
 			emailVerified: true,
 			profile: { create: { popiaConsentAt: new Date(), available: data.available ?? true } },
-			workerProfile: { create: { driversLicence: data.licence ?? false } },
 			interests: { create: data.categories.map((categoryId) => ({ categoryId })) },
 			jobTypePrefs: { create: data.jobTypes.map((jobType) => ({ jobType })) }
 		}
@@ -36,8 +34,7 @@ async function person(
 
 await person('Piet Messelaar', {
 	categories: [konstruksie.id],
-	jobTypes: ['ODD_JOB', 'SEASONAL'],
-	licence: true
+	jobTypes: ['ODD_JOB', 'SEASONAL']
 });
 await person('Sarel Seisoen', { categories: [konstruksie.id, tuin.id], jobTypes: ['SEASONAL'] });
 await person('Anna Tuin', { categories: [tuin.id], jobTypes: ['ODD_JOB'] });
@@ -47,13 +44,12 @@ await person('Koos Vakansie', {
 	available: false
 });
 
-// Die passing-navraag uit PLAN.md §5: "'n los takie in Konstruksie, rybewys nodig"
+// Die passing-navraag uit PLAN.md §5: "'n los takie in Konstruksie"
 const matches = await db.user.findMany({
 	where: {
 		profile: { available: true, blocked: false, popiaConsentAt: { not: null } },
 		interests: { some: { categoryId: konstruksie.id } },
-		jobTypePrefs: { some: { jobType: 'ODD_JOB' } },
-		workerProfile: { driversLicence: true }
+		jobTypePrefs: { some: { jobType: 'ODD_JOB' } }
 	},
 	select: { name: true }
 });
@@ -67,7 +63,6 @@ const piet = await db.user.findFirst({
 	where: { email: { startsWith: 'piet.' } },
 	include: {
 		profile: true,
-		workerProfile: true,
 		interests: { include: { category: true } },
 		jobTypePrefs: true
 	}

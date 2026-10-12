@@ -1,4 +1,5 @@
 import { prisma } from './client.ts';
+import type { Db } from './create.ts';
 import type { ListingKind, Prisma } from './generated/client.ts';
 
 export const category = {
@@ -7,8 +8,8 @@ export const category = {
 	create: (data: Prisma.CategoryCreateInput) => prisma().category.create({ data }),
 	update: (id: number, data: Prisma.CategoryUpdateInput) =>
 		prisma().category.update({ where: { id }, data }),
-	findActive: (kind: ListingKind) =>
-		prisma().category.findMany({
+	findActive: (kind: ListingKind, db: Db = prisma()) =>
+		db.category.findMany({
 			where: { kind, active: true },
 			orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }]
 		})

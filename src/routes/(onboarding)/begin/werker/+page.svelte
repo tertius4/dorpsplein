@@ -81,17 +81,6 @@
 			{#each f.jobTypes.issues() ?? [] as issue (issue.message)}
 				<p class="mt-2 text-sm text-red-700">{issue.message}</p>
 			{/each}
-
-			<div class="mt-4 space-y-2">
-				<label class="flex items-center gap-2">
-					<input {...f.driversLicence.as('checkbox')} />
-					<span>Ek het ’n rybewys</span>
-				</label>
-				<label class="flex items-center gap-2">
-					<input {...f.ownTransport.as('checkbox')} />
-					<span>Ek het eie vervoer</span>
-				</label>
-			</div>
 		</fieldset>
 
 		<fieldset>

@@ -100,11 +100,28 @@
 		</section>
 	{/if}
 
-	<section class="rounded-lg border border-dashed border-stone-300 p-4">
-		<h2 class="font-semibold text-stone-900">Binnekort</h2>
-		<p class="mt-1 text-sm text-stone-600">
-			Werkgewers sal binnekort werk kan plaas. As dit by jou belangstellings pas, kry jy ’n
-			kennisgewing en kan jy met een knoppie sê dat jy beskikbaar is.
+	<section class="rounded-lg border border-stone-200 bg-white p-4">
+		<h2 class="font-semibold text-stone-900">Jou plasings</h2>
+		<p class="text-sm text-stone-600">
+			{#if home.openListings === 0}
+				Jy het geen oop plasings nie. Plaas werk, dan hoor mense wat by jou aanbod pas daarvan.
+			{:else}
+				Jy het {home.openListings} oop {home.openListings === 1 ? 'plasing' : 'plasings'}.
+			{/if}
 		</p>
+		<div class="mt-3 flex gap-2">
+			<a
+				href="/plasings/nuut"
+				class="rounded-md bg-stone-900 px-3 py-2 text-sm font-medium text-white"
+			>
+				Plaas werk
+			</a>
+			<a
+				href="/plasings"
+				class="rounded-md border border-stone-300 px-3 py-2 text-sm font-medium text-stone-800"
+			>
+				My plasings
+			</a>
+		</div>
 	</section>
 </main>

@@ -3,6 +3,7 @@ import { error } from '@sveltejs/kit';
 import { JOB_TYPES } from '#lib/schemas/fields.ts';
 import type { InterestsInput, QualificationInput } from '#lib/schemas/profile.ts';
 import { auth } from '../auth.ts';
+import type { Db } from '../db/create.ts';
 import { DB, type JobType } from '../db/index.ts';
 import { JOB_TYPE_LABELS } from './kinds/job.ts';
 import { photoUrl } from './photos.ts';
@@ -17,8 +18,8 @@ export function formatPhone(phone: string | null | undefined) {
 }
 
 /** Gooi 400 as enige ID nie 'n aktiewe werk-kategorie is nie (gepeuter). */
-export async function assertActiveJobCategories(ids: number[]) {
-	const active = new Set((await DB.category.findActive('JOB')).map((c) => c.id));
+export async function assertActiveJobCategories(ids: number[], db?: Db) {
+	const active = new Set((await DB.category.findActive('JOB', db)).map((c) => c.id));
 	if (!ids.every((id) => active.has(id))) error(400, 'Ongeldige kategorie');
 }
 
@@ -27,11 +28,10 @@ export async function getMyProfile(userId: string) {
 	const { user } = getRequestEvent().locals;
 
 	// Onafhanklike navrae tegelyk: een rondte na Neon in plaas van vyf.
-	const [profile, interests, jobTypePrefs, worker, categories, qualifications] = await Promise.all([
+	const [profile, interests, jobTypePrefs, categories, qualifications] = await Promise.all([
 		DB.profile.findByUserId(userId),
 		DB.interest.findByUser(userId),
 		DB.jobTypePreference.findByUser(userId),
-		DB.workerProfile.findByUser(userId),
 		DB.category.findActive('JOB'),
 		DB.qualification.findByUser(userId)
 	]);
@@ -62,8 +62,6 @@ export async function getMyProfile(userId: string) {
 			label: JOB_TYPE_LABELS[value],
 			selected: wanted.has(value)
 		})),
-		driversLicence: worker?.driversLicence ?? false,
-		ownTransport: worker?.ownTransport ?? false,
 		qualifications: qualifications.map(({ id, name, issuer, year }) => ({
 			id,
 			name,
@@ -96,18 +94,8 @@ export async function updateInterests(userId: string, items: InterestsInput) {
 	await DB.$transaction((tx) => DB.interest.syncForUser(userId, items, tx));
 }
 
-export async function updateJobPreferences(
-	userId: string,
-	input: { jobTypes: JobType[]; driversLicence?: boolean; ownTransport?: boolean }
-) {
-	await DB.$transaction(async (tx) => {
-		await DB.jobTypePreference.replaceForUser(userId, input.jobTypes, tx);
-		await DB.workerProfile.upsert(
-			userId,
-			{ driversLicence: input.driversLicence ?? false, ownTransport: input.ownTransport ?? false },
-			tx
-		);
-	});
+export async function updateJobPreferences(userId: string, input: { jobTypes: JobType[] }) {
+	await DB.jobTypePreference.replaceForUser(userId, input.jobTypes);
 }
 
 export async function setAvailable(userId: string, available: boolean) {

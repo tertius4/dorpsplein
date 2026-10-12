@@ -7,14 +7,4 @@ describe('jobKind.matchFilter', () => {
 			jobTypePrefs: { some: { jobType: 'ODD_JOB' } }
 		});
 	});
-
-	it('vereis ’n rybewys net as die plasing dit vra', () => {
-		expect(jobKind.matchFilter({ jobType: 'PERMANENT', requiresDriversLicence: true })).toEqual({
-			jobTypePrefs: { some: { jobType: 'PERMANENT' } },
-			workerProfile: { is: { driversLicence: true } }
-		});
-		expect(
-			jobKind.matchFilter({ jobType: 'PERMANENT', requiresDriversLicence: false })
-		).not.toHaveProperty('workerProfile');
-	});
 });

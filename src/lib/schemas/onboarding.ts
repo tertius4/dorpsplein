@@ -10,8 +10,6 @@ export const onboardingSchema = z
 			.min(1, 'Kies minstens een kategorie')
 			.transform((ids) => [...new Set(ids.map(Number))]),
 		jobTypes,
-		driversLicence: z.boolean().optional(),
-		ownTransport: z.boolean().optional(),
 		popiaConsent: z.boolean().optional()
 	})
 	.refine((d) => d.popiaConsent === true, {

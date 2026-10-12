@@ -33,9 +33,7 @@ export const interestsSchema = z
 	.refine((list) => list.length > 0, 'Kies minstens een kategorie');
 
 export const jobPreferencesSchema = z.object({
-	jobTypes,
-	driversLicence: z.boolean().optional(),
-	ownTransport: z.boolean().optional()
+	jobTypes
 });
 
 export const availabilitySchema = z.boolean();

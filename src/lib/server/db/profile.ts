@@ -3,7 +3,7 @@ import type { Db } from './create.ts';
 import type { Prisma } from './generated/client.ts';
 
 export const profile = {
-	findByUserId: (userId: string) => prisma().profile.findUnique({ where: { userId } }),
+	findByUserId: (userId: string, db: Db = prisma()) => db.profile.findUnique({ where: { userId } }),
 
 	upsert: (
 		userId: string,

@@ -28,7 +28,6 @@ export const user = {
 						popiaConsentAt: true
 					}
 				},
-				workerProfile: { select: { driversLicence: true, ownTransport: true } },
 				interests: {
 					where: { category: { active: true } },
 					select: { yearsExperience: true, category: { select: { name: true, icon: true } } },

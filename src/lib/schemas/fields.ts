@@ -20,3 +20,6 @@ export const headline = z.string().trim().max(80, 'Hoogstens 80 karakters').opti
 export const jobTypes = z
 	.array(z.enum(JOB_TYPES), { error: 'Kies minstens een tipe werk' })
 	.min(1, 'Kies minstens een tipe werk');
+
+/** UUID wat die blaaier per aksie maak; die bediener verwerk dieselfde id nooit twee keer nie. */
+export const requestId = z.uuid('Ongeldige versoek-ID');

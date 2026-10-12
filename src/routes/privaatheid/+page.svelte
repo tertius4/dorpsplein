@@ -23,7 +23,7 @@
 		</li>
 		<li>
 			<strong>Profiel:</strong> selnommer, opskrif, “oor my”, foto, belangstellings en jare ervaring,
-			die tipes werk wat jy soek, rybewys en eie vervoer, kwalifikasies en of jy beskikbaar is.
+			die tipes werk wat jy soek, kwalifikasies en of jy beskikbaar is.
 		</li>
 		<li>
 			<strong>Tegnies:</strong> vir elke aangemelde toestel die IP-adres en blaaiertipe, en tellers wat

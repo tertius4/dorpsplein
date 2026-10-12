@@ -11,6 +11,11 @@
 
 	const initials = $derived(getInitials(name));
 
+	// 'n Foto wat nie laai nie (verwyder, Google-skakel verval, geen sein): val terug op die voorletters.
+	// Ons onthou watter URL gefaal het, so 'n nuwe foto kry weer 'n kans.
+	let failedImage = $state<string | null>(null);
+	const showImage = $derived(Boolean(image) && image !== failedImage);
+
 	// Dieselfde naam kry altyd dieselfde kleur.
 	const COLOURS = ['bg-amber-600', 'bg-indigo-700', 'bg-sky-700', 'bg-rose-700', 'bg-violet-700'];
 	const colour = $derived(
@@ -18,13 +23,14 @@
 	);
 </script>
 
-{#if image}
+{#if showImage}
 	<img
 		src={image}
 		alt=""
 		width={size}
 		height={size}
 		referrerpolicy="no-referrer"
+		onerror={() => (failedImage = image)}
 		class="rounded-full object-cover"
 		style:width="{size}px"
 		style:height="{size}px"

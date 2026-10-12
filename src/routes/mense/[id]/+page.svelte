@@ -56,15 +56,6 @@
 		</section>
 	{/if}
 
-	<div class="mt-4 flex flex-wrap gap-2 text-sm">
-		{#if person.driversLicence}
-			<span class="rounded-full bg-stone-100 px-3 py-1 text-stone-700">🚗 Rybewys</span>
-		{/if}
-		{#if person.ownTransport}
-			<span class="rounded-full bg-stone-100 px-3 py-1 text-stone-700">🛻 Eie vervoer</span>
-		{/if}
-	</div>
-
 	{#if person.bio}
 		<section class="mt-8">
 			<h2 class="text-lg font-semibold text-stone-800">Oor my</h2>
